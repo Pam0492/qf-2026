@@ -348,7 +348,7 @@ const mAdd=(m,n)=>mStr(mIdx(m)+n);
 const mNome=m=>`${MESI[mIdx(m)%12]} ${Math.floor(mIdx(m)/12)}`;
 const today=new Date();const OGGI=mStr(today.getFullYear()*12+today.getMonth());
 
-const VERSIONE="3.1 · 30 ottobre 2026";
+const VERSIONE="3.2 · 30 ottobre 2026";
 const CADENZE={1:"Mensile",2:"Bimestrale",3:"Trimestrale",6:"Semestrale",12:"Annuale",24:"Biennale"};
 const CATEGORIE=["Casa","Utenze","Assicurazioni","Trasporti","Abbonamenti","Salute","Tasse","Famiglia","Altro"];
 const eur=new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR"});
@@ -765,6 +765,7 @@ function vImp(){
     document.getElementById("pDay").onchange=e=>{const v=parseInt(e.target.value,10);if(v>=1&&v<=28){state.payDay=v;cur=autoCur=curPeriod();commit("Giorno salvato")}else{e.target.value=state.payDay}};
     document.querySelectorAll("[data-sal]").forEach(b=>b.onclick=()=>openSalary(b.dataset.sal));
     document.getElementById("exp").onclick=exportData;document.getElementById("imp").onclick=openImport;
+    document.getElementById("csvBtn").onclick=openCsv;
   };
   return `<section><div class="label">Stipendi arrivati</div>
    <div class="ledger">${paidL.length?paidL.map(m=>`<div class="row click" data-paid="${m}"><span class="t" style="text-transform:capitalize">${mNome(m)}</span><span class="amt num">${EU(state.paid[m].amount)}</span><span class="sub">Arrivato il ${shortDay(state.paid[m].date)}</span></div>`).join(""):`<div class="empty">Ancora nessuno. Registra lo stipendio quando arriva, con l'importo esatto.</div>`}</div>
@@ -777,6 +778,9 @@ function vImp(){
    <div class="ledger">${hist.length?hist.map(s=>`<div class="row click" data-sal="${s.from}"><span class="t">Da ${mNome(s.from)}</span><span class="amt num">${EU(s.amount)}</span></div>`).join(""):`<div class="empty">Nessuno stipendio inserito.</div>`}</div>
    <div class="actions"><button class="btn" id="salBtn">Cambia stipendio previsto</button></div>
    <p class="foot">La cifra usata per i mesi in cui non hai ancora registrato lo stipendio vero. Ogni cambio vale dal mese indicato in poi.</p></section>
+   <section><h2 class="h2">Esporta in CSV</h2>
+   <p class="hint">Un foglio di calcolo da aprire con Numbers, Excel o Google Fogli: spese registrate, voci e riepilogo di ogni periodo.</p>
+   <button type="button" class="btn primary" id="csvBtn" style="width:100%">Esporta in CSV</button></section>
    <section><div class="label">Backup</div>
    <p class="foot">Esporta un file con tutte le voci e lo storico: scegli <b>Salva su File</b> o iCloud Drive. Ti serve se cambi iPhone o cancelli i dati di Safari.</p>
    <div class="actions inline" style="display:grid;grid-template-columns:1fr 1fr"><button class="btn" id="exp">Esporta dati</button><button class="btn" id="imp">Importa dati</button></div></section>
@@ -959,6 +963,48 @@ function openBill(id,m){
   },"bOk");
 }
 
+/* ---- CSV per fogli di calcolo italiani: separatore ";", virgola decimale, UTF-8 con BOM ---- */
+const csvCell=v=>{if(typeof v==="number")return v.toFixed(2).replace(".",",");v=String(v??"");return /[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+const toCsv=rows=>"\ufeff"+rows.map(r=>r.map(csvCell).join(";")).join("\r\n")+"\r\n";
+const itDate=d=>`${d.slice(8,10)}/${d.slice(5,7)}/${d.slice(0,4)}`;
+function csvSpese(){const rows=[["Data","Periodo","Descrizione","Budget","Importo (€)"]];
+  [...state.moves].sort((a,b)=>a.date.localeCompare(b.date)).forEach(x=>rows.push([itDate(x.date),mNome(periodOf(x.date)),x.note||"",budName(x.budgetId)||"Fuori budget",x.amount]));
+  return toCsv(rows)}
+function csvVoci(){const m=curPeriod(),rows=[["Nome","Tipo","Categoria","Importo (€)","Cadenza","Quota al mese (€)","Importo variabile","Accumula il non speso","Rate","Stato"]];
+  const T={spesa:"Spesa fissa",budget:"Budget",risparmio:"Risparmio"};
+  state.items.forEach(it=>{const v=versionAt(it,m)||it.versions[it.versions.length-1];const on=!!versionAt(it,m);
+    const q=it.kind==="budget"||it.kind==="risparmio"?v.amount:calcItem(it,v,m).q;
+    rows.push([it.name,T[it.kind]||it.kind,it.category||"",v.amount,it.kind==="spesa"?CADENZE[v.cadence]:"Mensile",q,it.variable?"sì":"no",it.carry?"sì":"no",it.rates?String(it.rates):"",on?"attiva":(it.endedAt&&mIdx(m)>=mIdx(it.endedAt)?"terminata o sospesa":"non ancora attiva")])});
+  return toCsv(rows)}
+function csvRiepilogo(){const now=curPeriod();
+  const fs=Math.min(firstStart(),...state.moves.map(x=>mIdx(periodOf(x.date))),...Object.keys(state.paid).map(mIdx),mIdx(now));
+  const rows=[["Periodo","Dal","Al","Stipendio (€)","Stipendio confermato","Quote spese fisse (€)","Addebiti fissi reali (€)","Risparmi e PAC (€)","Budget e spese variabili (€)","Spese registrate (€)","Libero (€)"]];
+  for(let i=fs;i<=mIdx(now);i++){const m=mStr(i),c=monthCalc(m),r=periodRange(m);
+    rows.push([mNome(m),itDate(r.start),itDate(r.end),c.stip,state.paid[m]?"sì":"no",c.qS,c.realS,c.qR,c.qB,c.speso,c.libero])}
+  return toCsv(rows)}
+async function saveFiles(files){
+  try{const dl=window.claude?.use?await claude.use("downloads"):null;
+    if(dl){for(const f of files)await dl.save({filename:f.name,data:f.text});toast(files.length>1?"File salvati":"File salvato");return}}
+  catch(e){if(e&&e.code&&e.code!=="unavailable"){toast("Salvataggio annullato");return}}
+  try{const fl=files.map(f=>new File([f.text],f.name,{type:"text/csv"}));
+    if(navigator.canShare&&navigator.canShare({files:fl})){await navigator.share({files:fl,title:"Il Mio Mese"});return}}
+  catch(e){if(e&&e.name==="AbortError")return}
+  for(const f of files){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([f.text],{type:"text/csv"}));a.download=f.name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
+}
+function openCsv(){
+  const td=isoToday(),f={spese:()=>({name:`il-mio-mese-spese-${td}.csv`,text:csvSpese()}),voci:()=>({name:`il-mio-mese-voci-${td}.csv`,text:csvVoci()}),riepilogo:()=>({name:`il-mio-mese-riepilogo-${td}.csv`,text:csvRiepilogo()})};
+  sheet("Esporta in CSV",`
+   <p class="hint">Scegli cosa esportare. Sull'iPhone si apre il menu Condividi: scegli Salva su File, oppure aprilo con Numbers.</p>
+   <ul class="mlist">
+    <li><button type="button" class="mitem" data-csv="spese"><span class="mtxt"><b>Spese registrate</b><span>${state.moves.length} spese: data, periodo, descrizione, budget, importo</span></span></button></li>
+    <li><button type="button" class="mitem" data-csv="voci"><span class="mtxt"><b>Spese fisse, budget e risparmi</b><span>${state.items.length} voci con cadenza e quota al mese</span></span></button></li>
+    <li><button type="button" class="mitem" data-csv="riepilogo"><span class="mtxt"><b>Riepilogo per periodo</b><span>Stipendio, uscite e libero di ogni periodo</span></span></button></li>
+   </ul>
+   <button type="button" class="btn primary" data-csv="tutto" style="width:100%">Esporta tutti e tre</button>
+   <p class="hint">Per spostare i dati su un altro iPhone usa invece il Backup: è l'unico file che l'app sa reimportare.</p>`,close=>{
+    document.querySelectorAll("[data-csv]").forEach(b=>b.onclick=async()=>{const k=b.dataset.csv;const files=k==="tutto"?[f.spese(),f.voci(),f.riepilogo()]:[f[k]()];close();await saveFiles(files)});
+  });
+}
 async function exportData(){
   const json=JSON.stringify({...state,sample:false},null,1);
   try{const f=new File([json],`il-mio-mese-${OGGI}.json`,{type:"application/json"});
