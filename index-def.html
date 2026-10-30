@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quote Fisse</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Quote Fisse">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<style>:root{color-scheme:light dark;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>
+/* Layout: stile nativo iOS. Titolo grande, liste "inset grouped", tab bar traslucida, fogli dal basso con maniglia */
+:root{
+  --bg:#F2F2F7; --surface:#FFFFFF; --sunk:#E9E9EF; --ink:#000000; --muted:#6C6C70; --line:#C6C6C8;
+  --accent:#1E7A62; --accent-ink:#FFFFFF; --save:#5856D6; --charge:#C26A00; --neg:#D70015;
+  --bar:rgb(249 249 249 / .86); --press:#D1D1D6;
+  --f-display:-apple-system, "SF Pro Display", system-ui, sans-serif;
+  --f-body:-apple-system, "SF Pro Text", system-ui, sans-serif;
+  --f-num:-apple-system, "SF Pro Text", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#000000; --surface:#1C1C1E; --sunk:#2C2C2E; --ink:#FFFFFF; --muted:#AEAEB2; --line:#48484A;
+  --accent:#3CC79E; --accent-ink:#00140E; --save:#7D7AFF; --charge:#FFA53A; --neg:#FF6961;
+  --bar:rgb(22 22 24 / .86); --press:#3A3A3C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#000000; --surface:#1C1C1E; --sunk:#2C2C2E; --ink:#FFFFFF; --muted:#AEAEB2; --line:#48484A;
+  --accent:#3CC79E; --accent-ink:#00140E; --save:#7D7AFF; --charge:#FFA53A; --neg:#FF6961;
+  --bar:rgb(22 22 24 / .86); --press:#3A3A3C; color-scheme:dark}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.35;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+body.locked{overflow:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bar)}
+.wrap{max-width:600px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 calc(150px + env(safe-area-inset-bottom,0px))}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{touch-action:manipulation;-webkit-user-select:none;user-select:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px))) calc(-1 * max(16px,env(safe-area-inset-right,0px)));padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:8px;border-bottom:.5px solid var(--line)}
+.brand{font-weight:600;font-size:17px;flex:1;min-width:0}
+.brand small{display:block;font-weight:400;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mswitch{display:flex;align-items:center}
+.mswitch button{border:0;background:none;width:44px;height:44px;border-radius:22px;cursor:pointer;font-size:26px;line-height:1;color:var(--accent)}
+.mswitch button:active{background:var(--sunk)}
+.mswitch span{min-width:112px;text-align:center;font-weight:600;font-size:15px;text-transform:capitalize}
+.largetitle{font-family:var(--f-display);font-weight:700;font-size:34px;letter-spacing:.01em;margin-top:10px;text-transform:capitalize}
+
+.banner{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--surface);font-size:15px;color:var(--muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.banner b{color:var(--ink)}
+
+section{margin-top:26px;display:flex;flex-direction:column;gap:7px}
+.label{font-size:13px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);padding-inline:16px}
+.foot{font-size:13px;color:var(--muted);padding-inline:16px;margin:0}
+
+.hero{padding-top:8px;gap:4px}
+.hero .label{padding:0}
+.hero .big{font-family:var(--f-display);font-weight:700;font-size:clamp(42px,13vw,56px);line-height:1.05;letter-spacing:-.01em}
+.hero .big.neg{color:var(--neg)}
+.hero p{margin:4px 0 0;color:var(--muted);font-size:15px}
+
+.split{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--sunk);margin-top:6px}
+.split i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend span::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c)}
+
+.ledger{background:var(--surface);border-radius:12px;overflow:hidden}
+.row{position:relative;display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:11px 16px;min-height:44px;align-items:center}
+.row+.row::before{content:"";position:absolute;top:0;left:16px;right:0;border-top:.5px solid var(--line)}
+.row .t{min-width:0;overflow-wrap:anywhere}
+.row .sub{grid-column:1/-1;font-size:14px;color:var(--muted)}
+.row.total{font-weight:600}
+.row.click{cursor:pointer;padding-right:34px}
+.row.click::after{content:"";position:absolute;right:16px;top:50%;width:8px;height:8px;border-top:2px solid var(--press);border-right:2px solid var(--press);transform:translateY(-50%) rotate(45deg)}
+.row.click:active{background:var(--sunk)}
+.amt{text-align:right;white-space:nowrap}
+.minus{color:var(--muted)}
+
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:1px 8px;border-radius:999px;margin-left:6px;vertical-align:2px;white-space:nowrap;background:var(--sunk)}
+.chip.save{color:var(--save)} .chip.charge{color:var(--charge)} .chip.off{color:var(--muted)}
+
+.btn{border:0;background:var(--surface);border-radius:12px;min-height:50px;padding:0 18px;cursor:pointer;font-weight:600;font-size:17px;color:var(--accent)}
+.btn:active{opacity:.6}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--neg)}
+.btn.sm{min-height:44px;padding:0 14px;font-size:15px}
+.btn.plain{background:none;padding:0 4px;min-height:44px}
+.actions{display:flex;gap:10px;flex-direction:column}
+.actions.inline{flex-direction:row;flex-wrap:wrap}
+.del{border:0;background:none;width:44px;height:44px;margin:-11px -12px -11px 0;color:var(--neg);font-size:15px;cursor:pointer}
+
+.empty{padding:22px 16px;text-align:center;color:var(--muted);font-size:15px}
+
+.cal{overflow-x:auto;-webkit-overflow-scrolling:touch;background:var(--surface);border-radius:12px}
+.cal table{border-collapse:collapse;font-size:13px;min-width:100%}
+.cal th,.cal td{padding:9px 8px;border-top:.5px solid var(--line);text-align:right;white-space:nowrap}
+.cal thead th{border-top:0;color:var(--muted);font-weight:600;text-transform:capitalize}
+.cal th:first-child,.cal td:first-child{text-align:left;position:sticky;left:0;background:var(--surface);max-width:120px;overflow:hidden;text-overflow:ellipsis;padding-left:14px}
+.cal td.hit{color:var(--charge);font-weight:600}
+.cal td.cur,.cal th.cur{background:var(--sunk)}
+.cal tfoot td{font-weight:600}
+.cal .dot{color:var(--line)}
+
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+nav.tabs .in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+nav.tabs button{border:0;background:none;min-height:50px;padding:6px 2px 4px;cursor:pointer;color:var(--muted);font-size:10px;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav.tabs button svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs button[aria-current="true"]{color:var(--accent)}
+.fab{position:fixed;right:max(16px,calc(env(safe-area-inset-right,0px) + 16px));bottom:calc(66px + env(safe-area-inset-bottom,0px));z-index:6;width:56px;height:56px;border-radius:28px;border:0;background:var(--accent);color:var(--accent-ink);font-size:32px;font-weight:300;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgb(0 0 0 / .22)}
+.fab:active{transform:scale(.94)}
+
+.sheet-bg{position:fixed;inset:0;z-index:20;background:rgb(0 0 0 / .4);display:flex;align-items:flex-end;justify-content:center}
+/* Foglio dal basso: parte alta fissa (maniglia + titolo), parte sotto che scorre sempre */
+.sheet{background:var(--bg);width:100%;max-width:560px;height:calc(100vh - 12px);height:calc(100dvh - env(safe-area-inset-top,0px) - 12px);border-radius:14px 14px 0 0;display:flex;flex-direction:column;overflow:hidden}
+.sheet-head{flex:none;padding:8px max(16px,env(safe-area-inset-right,0px)) 6px max(16px,env(safe-area-inset-left,0px));touch-action:none;cursor:grab;border-bottom:.5px solid var(--line)}
+.sheet-body{flex:1 1 auto;min-height:0;display:block;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:16px max(16px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.sheet-body>*+*{margin-top:16px}
+.sheet-body>[hidden]+*{margin-top:16px}
+.grab{width:36px;height:5px;border-radius:3px;background:var(--press);margin:0 auto 6px}
+.sheet header{display:flex;align-items:center;gap:10px}
+.sheet header h2{flex:1;font-size:17px;font-weight:600;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sheet header .btn{min-width:72px}
+.field input[type="month"]{display:block;text-align:left}
+.field input::-webkit-date-and-time-value{text-align:left}
+.group{background:var(--surface);border-radius:12px;overflow:hidden}
+.field{position:relative;display:flex;flex-direction:column;gap:4px;padding:12px 16px}
+.field+.field::before{content:"";position:absolute;top:0;left:16px;right:0;border-top:.5px solid var(--line)}
+.field label{font-size:14px;color:var(--muted);font-weight:500}
+.field .hint{font-size:14px;color:var(--muted);line-height:1.35}
+.field input,.field select,.field textarea{width:100%;padding:4px 0;border:0;background:none;font-size:17px;outline:none;min-height:32px;-webkit-appearance:none;appearance:none}
+.field select{background:none;padding-right:28px;color:var(--accent);font-weight:500}
+.field:has(select)::after{content:"";position:absolute;right:20px;top:46px;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);pointer-events:none}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted);opacity:.7}
+.field input[type="month"]{color:var(--accent);font-weight:500}
+.field textarea{font-family:ui-monospace,"SF Mono",monospace;font-size:13px;min-height:140px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--sunk);border-radius:9px;padding:2px;gap:2px}
+.seg button{border:0;background:none;min-height:32px;border-radius:7px;cursor:pointer;font-weight:500;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--surface);font-weight:600;box-shadow:0 3px 8px rgb(0 0 0 / .12)}
+.preview{background:var(--surface);border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap;color:var(--muted);font-size:15px}
+.preview b{font-size:22px;color:var(--ink)}
+.confirm{background:var(--surface);border-radius:12px;padding:14px 16px;font-size:15px;display:flex;flex-direction:column;gap:10px}
+.toggle{flex-direction:row!important;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+.toggle>span{display:flex;flex-direction:column;gap:3px;font-size:17px;color:var(--ink);min-width:0}
+.toggle{min-height:64px}
+.field input.switch{-webkit-appearance:none;appearance:none;width:51px;min-height:31px;height:31px;padding:0;border-radius:16px;background:var(--sunk);position:relative;flex:none;cursor:pointer;transition:background .2s;margin:0}
+.field input.switch::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgb(0 0 0 / .25);transition:transform .2s}
+.field input.switch:checked{background:var(--accent)}
+.field input.switch:checked::after{transform:translateX(20px)}
+.chip.est{color:var(--muted);font-style:italic}
+.cal td.est{font-style:italic;color:var(--muted)}
+.err{font-size:14px;color:var(--neg);padding-inline:16px}
+.err:empty{display:none}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(130px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:15px;font-weight:500;white-space:nowrap}
+@media (hover:hover){.row.click:hover,.mswitch button:hover{background:var(--sunk)}}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .28s cubic-bezier(.2,.8,.2,1)}@keyframes up{from{transform:translateY(100%)}}.sheet-bg{animation:fade .2s}@keyframes fade{from{background:transparent}}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">Quote Fisse<small id="syncState">Salvato su questo iPhone, funziona offline</small></div>
+    <div class="mswitch" role="group" aria-label="Mese">
+      <button id="prevM" aria-label="Mese precedente">‹</button>
+      <span id="mLabel"></span>
+      <button id="nextM" aria-label="Mese successivo">›</button>
+    </div>
+  </header>
+  <div id="banner"></div>
+  <main id="view"></main>
+</div>
+<button class="fab" id="fab" aria-label="Aggiungi voce">+</button>
+<nav class="tabs"><div class="in">
+  <button data-tab="mese"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M21 19H3"/></svg>Mese</button>
+  <button data-tab="voci"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>Voci</button>
+  <button data-tab="calendario"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendario</button>
+  <button data-tab="impostazioni"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="4"/></svg>Stipendio</button>
+</div></nav>
+<div id="sheetHost"></div>
+
+<script>
+/* ===== Mesi ===== */
+const MESI=["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
+const MBREVI=["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"];
+const mIdx=m=>{const[y,mm]=m.split("-").map(Number);return y*12+mm-1};
+const mStr=i=>`${Math.floor(i/12)}-${String(i%12+1).padStart(2,"0")}`;
+const mAdd=(m,n)=>mStr(mIdx(m)+n);
+const mNome=m=>`${MESI[mIdx(m)%12]} ${Math.floor(mIdx(m)/12)}`;
+const today=new Date();const OGGI=mStr(today.getFullYear()*12+today.getMonth());
+
+const VERSIONE="1.4 · 30 ottobre 2026";
+const CADENZE={1:"Mensile",2:"Bimestrale",3:"Trimestrale",6:"Semestrale",12:"Annuale"};
+const CATEGORIE=["Casa","Utenze","Assicurazioni","Trasporti","Abbonamenti","Salute","Tasse","Famiglia","Altro"];
+const eur=new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR"});
+const EU=v=>eur.format(Math.round(v*100)/100);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10);
+const parseNum=s=>{s=String(s).trim().replace(/\s|€/g,"");if(s.includes(",")){s=s.replace(/\./g,"").replace(",",".")}const n=parseFloat(s);return isFinite(n)?n:NaN};
+
+/* ===== Modello =====
+ state.salary: [{from:"YYYY-MM", amount}]
+ state.items:  [{id,name,kind:"spesa"|"risparmio",category,endedAt:null|"YYYY-MM",
+                 versions:[{from, amount, cadence, anchor}]}]
+ Ogni modifica crea una versione valida "dal mese X": i mesi precedenti restano invariati. */
+function esempio(){
+  const s=OGGI, y=s.slice(0,4);
+  return {sample:true,salary:[{from:mAdd(s,-6),amount:2150}],items:[
+    {id:uid(),name:"Affitto",kind:"spesa",category:"Casa",endedAt:null,versions:[{from:mAdd(s,-6),amount:750,cadence:1,anchor:mAdd(s,-6)}]},
+    {id:uid(),name:"Luce e gas",kind:"spesa",category:"Utenze",endedAt:null,variable:true,coverage:"prima",bills:{[`${y}-01`]:182,[`${y}-03`]:158,[`${y}-05`]:104,[`${y}-07`]:92,[`${y}-09`]:118},versions:[{from:mAdd(s,-6),amount:140,cadence:2,anchor:`${y}-01`}]},
+    {id:uid(),name:"Condominio",kind:"spesa",category:"Casa",endedAt:null,versions:[{from:mAdd(s,-6),amount:210,cadence:3,anchor:`${y}-03`}]},
+    {id:uid(),name:"RC Auto",kind:"spesa",category:"Assicurazioni",endedAt:null,versions:[{from:mAdd(s,-6),amount:540,cadence:12,anchor:`${y}-04`}]},
+    {id:uid(),name:"Bollo auto",kind:"spesa",category:"Tasse",endedAt:null,versions:[{from:mAdd(s,-6),amount:186,cadence:12,anchor:`${y}-02`}]},
+    {id:uid(),name:"Palestra",kind:"spesa",category:"Salute",endedAt:null,versions:[{from:mAdd(s,-6),amount:240,cadence:6,anchor:`${y}-01`}]},
+    {id:uid(),name:"Internet casa",kind:"spesa",category:"Utenze",endedAt:null,versions:[{from:mAdd(s,-6),amount:27.9,cadence:1,anchor:mAdd(s,-6)}]},
+    {id:uid(),name:"PAC ETF azionario",kind:"risparmio",category:"Investimenti",endedAt:null,versions:[{from:mAdd(s,-6),amount:200,cadence:1,anchor:mAdd(s,-6)}]},
+    {id:uid(),name:"Fondo pensione",kind:"risparmio",category:"Investimenti",endedAt:null,versions:[{from:mAdd(s,-6),amount:100,cadence:1,anchor:mAdd(s,-6)}]}
+  ]};
+}
+let state=null;
+
+const salaryAt=m=>{let r=null;for(const s of state.salary){if(mIdx(s.from)<=mIdx(m)&&(!r||mIdx(s.from)>=mIdx(r.from)))r=s}return r?r.amount:0};
+function versionAt(it,m){
+  if(it.endedAt&&mIdx(m)>=mIdx(it.endedAt))return null;
+  let r=null;for(const v of it.versions){if(mIdx(v.from)<=mIdx(m)&&(!r||mIdx(v.from)>=mIdx(r.from)))r=v}return r;
+}
+/* Quota mensile e addebito di una voce in un mese.
+   - Spesa fissa: importo ÷ mesi della cadenza; addebito intero nei mesi della cadenza.
+   - Risparmio/PAC: intero ogni mese, nessuna ripartizione.
+   - Spesa variabile (bollette): ogni bolletta registrata si divide sui mesi che copre.
+     Per i mesi non ancora coperti da una bolletta registrata si usa una stima:
+     la bolletta dello stesso periodo dell'anno prima, altrimenti la media delle ultime 6, altrimenti la stima iniziale. */
+function billEst(it,v,B){
+  const b=it.bills||{};const ly=b[mStr(B-12)];if(ly!=null)return{amt:ly,how:"stessa bolletta dell'anno prima"};
+  let ks=Object.keys(b).filter(x=>mIdx(x)<=B).sort((x,y)=>mIdx(y)-mIdx(x)).slice(0,6);
+  if(!ks.length)ks=Object.keys(b).sort((x,y)=>mIdx(x)-mIdx(y)).slice(0,6);
+  if(ks.length)return{amt:ks.reduce((a,x)=>a+b[x],0)/ks.length,how:ks.length===1?"ultima bolletta":`media delle ultime ${ks.length} bollette`};
+  return{amt:v.amount,how:"stima iniziale"};
+}
+const covOff=it=>it.coverage==="incluso"?0:1;
+function calcItem(it,v,m){
+  if(it.kind==="risparmio")return{q:v.amount,c:v.amount};
+  const cad=v.cadence,k=mIdx(m);
+  if(!it.variable){const d=k-mIdx(v.anchor);return{q:v.amount/cad,c:((d%cad)+cad)%cad===0?v.amount:0}}
+  const o=covOff(it),b=it.bills||{},keys=Object.keys(b).map(mIdx).sort((x,y)=>x-y);
+  const A=keys.length?keys[keys.length-1]:mIdx(v.anchor);
+  let q=null,qEst=false;
+  for(const B of keys){if(B-o-cad+1<=k&&k<=B-o){q=b[mStr(B)]/cad;break}}
+  if(q===null){qEst=true;let Bk=k+o;for(let i=0;i<cad;i++){if((((k+o+i)-A)%cad+cad)%cad===0){Bk=k+o+i;break}}q=billEst(it,v,Bk).amt/cad}
+  let c=0,cEst=false;
+  if(b[m]!=null)c=b[m];
+  else if((!keys.length||k>keys[keys.length-1]||k<keys[0])&&((k-A)%cad+cad)%cad===0){c=billEst(it,v,k).amt;cEst=true}
+  return{q,c,qEst,cEst};
+}
+const quota=(it,v,m=cur)=>calcItem(it,v,m).q;
+const charged=(it,v,m)=>calcItem(it,v,m).c;
+function monthCalc(m){
+  const rows=[];
+  for(const it of state.items){const v=versionAt(it,m);if(!v)continue;const x=calcItem(it,v,m);rows.push({it,v,q:x.q,real:x.c,qEst:!!x.qEst,cEst:!!x.cEst})}
+  const stip=salaryAt(m);
+  const spese=rows.filter(r=>r.it.kind==="spesa"), ris=rows.filter(r=>r.it.kind==="risparmio");
+  const qS=spese.reduce((a,r)=>a+r.q,0), qR=ris.reduce((a,r)=>a+r.q,0);
+  const realS=spese.reduce((a,r)=>a+r.real,0);
+  return {m,stip,spese,ris,qS,qR,realS,libero:stip-qS-qR};
+}
+
+/* ===== Persistenza: archivio privato del proprio account, con copia locale ===== */
+const LS="quote-fisse-v1";let db=null,docRef=null,saveT=null;
+function lsGet(){try{const s=localStorage.getItem(LS);return s?JSON.parse(s):null}catch(e){return null}}
+function lsSet(){try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}}
+function persist(){
+  lsSet();clearTimeout(saveT);
+}
+function setSync(t){document.getElementById("syncState").textContent=t}
+
+/* ===== UI ===== */
+let tab="mese",cur=OGGI;
+const view=document.getElementById("view");
+function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),1800)}
+function commit(msg){if(state.sample){state.sample=false}persist();render();if(msg)toast(msg)}
+
+function render(){
+  document.getElementById("mLabel").textContent=mNome(cur);
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-current",b.dataset.tab===tab));
+  document.getElementById("banner").innerHTML=state.sample?`<div class="banner"><span><b>Dati di esempio.</b> Modificali o parti da zero: appena salvi una voce diventano tuoi.</span><button class="btn sm plain" id="reset">Parti da zero</button></div>`:"";
+  const r=document.getElementById("reset");if(r)r.onclick=()=>{state={sample:false,salary:[],items:[]};persist();render();openSalary()};
+  view.innerHTML=`<h1 class="largetitle">${({mese:"Riepilogo",voci:"Voci",calendario:"Calendario",impostazioni:"Stipendio"})[tab]}</h1>`+({mese:vMese,voci:vVoci,calendario:vCal,impostazioni:vImp})[tab]();
+  view.querySelectorAll("[data-edit]").forEach(e=>e.onclick=()=>openItem(e.dataset.edit));
+  view.querySelectorAll("[data-bill]").forEach(e=>e.onclick=()=>openBill(e.dataset.bill,cur));
+  bindTab?.();
+}
+let bindTab=null;
+
+function vMese(){
+  const c=monthCalc(cur);bindTab=()=>{document.getElementById("editSal").onclick=openSalary};
+  const tot=Math.max(c.stip,c.qS+c.qR,1);
+  const pct=v=>Math.max(0,v/tot*100).toFixed(2)+"%";
+  const reali=c.spese.filter(r=>r.real>0).sort((a,b)=>b.real-a.real);
+  const diff=c.realS-c.qS;
+  const byCat={};c.spese.forEach(r=>byCat[r.it.category]=(byCat[r.it.category]||0)+r.q);
+  const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  return `
+  <section class="hero">
+    <div class="label">Libero dopo spese e risparmi</div>
+    <div class="big num ${c.libero<0?"neg":""}">${EU(c.libero)}</div>
+    <p>Stipendio di ${mNome(cur)} meno quote mensili delle spese fisse e versamenti di risparmio.</p>
+  </section>
+  <section>
+    <div class="split" aria-hidden="true"><i style="width:${pct(c.qS)};background:var(--charge)"></i><i style="width:${pct(c.qR)};background:var(--save)"></i><i style="width:${pct(c.libero)};background:var(--accent)"></i></div>
+    <div class="legend"><span style="--c:var(--charge)">Spese fisse</span><span style="--c:var(--save)">Risparmi e PAC</span><span style="--c:var(--accent)">Libero</span></div>
+    <div class="ledger">
+      <div class="row click" id="editSal"><span class="t">Stipendio netto</span><span class="amt num">${EU(c.stip)}</span></div>
+      <div class="row"><span class="t">Spese fisse, quota mensile</span><span class="amt num minus">− ${EU(c.qS)}</span><span class="sub">${c.spese.length} voci, le non mensili ripartite sui mesi della loro cadenza${c.spese.some(r=>r.qEst)?`. Bollette stimate: ${c.spese.filter(r=>r.qEst).map(r=>esc(r.it.name)).join(", ")}`:""}</span></div>
+      <div class="row"><span class="t">Risparmi e PAC</span><span class="amt num minus">− ${EU(c.qR)}</span><span class="sub">Escono dal conto ma restano tuoi</span></div>
+      <div class="row total"><span class="t">Libero</span><span class="amt num">${EU(c.libero)}</span></div>
+    </div>
+  </section>
+  <section>
+    <div class="label">Addebiti reali a ${MESI[mIdx(cur)%12]}</div>
+    <div class="ledger">
+      ${reali.length?reali.map(r=>`<div class="row click" ${r.it.variable?`data-bill="${r.it.id}"`:`data-edit="${r.it.id}"`}><span class="t">${esc(r.it.name)}${r.cEst?`<span class="chip est">stima</span>`:r.v.cadence>1?`<span class="chip charge">${CADENZE[r.v.cadence].toLowerCase()}</span>`:""}</span><span class="amt num">${r.cEst?"~ ":""}${EU(r.real)}</span>${r.cEst?`<span class="sub">Arrivata la bolletta? Tocca e inserisci l'importo vero</span>`:""}</div>`).join(""):`<div class="empty">Nessuna spesa addebitata questo mese.</div>`}
+      <div class="row total"><span class="t">Totale addebitato</span><span class="amt num">${EU(c.realS)}</span>
+        <span class="sub">${Math.abs(diff)<0.005?"Coincide con l'accantonamento del mese.":diff>0?`${EU(diff)} oltre la quota mensile: li copre quanto hai accantonato nei mesi precedenti.`:`${EU(-diff)} da mettere da parte per le prossime scadenze.`}</span></div>
+    </div>
+  </section>
+  ${cats.length?`<section><div class="label">Quote mensili per categoria</div><div class="ledger">${cats.map(([k,v])=>`<div class="row"><span class="t">${esc(k)}</span><span class="amt num">${EU(v)}</span></div>`).join("")}</div></section>`:""}
+  `;
+}
+
+function itemRow(it){
+  const v=versionAt(it,cur)||it.versions[it.versions.length-1];
+  const off=!versionAt(it,cur);
+  const lastB=it.variable?Object.keys(it.bills||{}).sort((a,b)=>mIdx(b)-mIdx(a))[0]:null;
+  if(it.variable&&it.kind==="spesa"){const x=calcItem(it,v,cur);return `<div class="row click" data-edit="${it.id}"><span class="t">${esc(it.name)}<span class="chip charge">variabile</span>${off?`<span class="chip off">sospesa</span>`:""}</span><span class="amt num">${x.qEst?"~ ":""}${EU(x.q)}<span class="minus" style="font-size:13px"> /mese</span></span><span class="sub">${esc(it.category)} · bolletta ${CADENZE[v.cadence].toLowerCase()} · ${lastB?`ultima ${EU(it.bills[lastB])} a ${MESI[mIdx(lastB)%12]}`:"nessuna bolletta registrata"}</span></div>`}
+  const desc=it.kind==="risparmio"?`${EU(v.amount)} ogni mese`:v.cadence===1?`${EU(v.amount)} ogni mese`:`${EU(v.amount)} ${CADENZE[v.cadence].toLowerCase()} · prossimo addebito ${nextCharge(it,v)}`;
+  return `<div class="row click" data-edit="${it.id}"><span class="t">${esc(it.name)}${it.kind==="risparmio"?`<span class="chip save">risparmio</span>`:""}${off?`<span class="chip off">${it.endedAt&&mIdx(cur)>=mIdx(it.endedAt)?"sospesa":"non ancora attiva"}</span>`:""}</span><span class="amt num">${EU(quota(it,v))}<span class="minus" style="font-size:13px"> /mese</span></span><span class="sub">${esc(it.category)} · ${desc}</span></div>`;
+}
+function nextCharge(it,v){for(let i=0;i<v.cadence;i++){const m=mAdd(cur,i);if(charged(it,v,m))return MBREVI[mIdx(m)%12]+" "+m.slice(0,4)}return "—"}
+function vVoci(){
+  bindTab=null;
+  const act=state.items.filter(i=>versionAt(i,cur)), off=state.items.filter(i=>!versionAt(i,cur));
+  const sp=act.filter(i=>i.kind==="spesa").sort((a,b)=>quota(b,versionAt(b,cur))-quota(a,versionAt(a,cur)));
+  const ri=act.filter(i=>i.kind==="risparmio");
+  const blk=(t,l)=>`<section><div class="label">${t}</div><div class="ledger">${l.length?l.map(itemRow).join(""):`<div class="empty">Nessuna voce. Usa + per aggiungerne una.</div>`}</div></section>`;
+  return blk(`Spese fisse attive a ${mNome(cur)}`,sp)+blk("Risparmi e PAC",ri)+(off.length?blk("Sospese o non ancora attive",off):"");
+}
+
+function vCal(){
+  bindTab=null;
+  const y=Math.floor(mIdx(cur)/12);const months=[...Array(12)].map((_,i)=>`${y}-${String(i+1).padStart(2,"0")}`);
+  const items=state.items.filter(it=>months.some(m=>versionAt(it,m)));
+  const sp=items.filter(i=>i.kind==="spesa"), ri=items.filter(i=>i.kind==="risparmio");
+  const cell=(it,m)=>{const v=versionAt(it,m);if(!v)return `<td class="${m===cur?"cur":""}"><span class="dot">·</span></td>`;const x=calcItem(it,v,m),a=x.c;return `<td class="num ${x.cEst?"est":a&&it.kind==="spesa"&&v.cadence>1?"hit":""} ${m===cur?"cur":""}">${a?(x.cEst?"~":"")+EU(a).replace(/\s?€/,""):`<span class="dot">·</span>`}</td>`};
+  const sum=(list,fn)=>months.map(m=>list.reduce((a,it)=>{const v=versionAt(it,m);return a+(v?fn(it,v,m):0)},0));
+  const realS=sum(sp,charged), qS=sum(sp,(it,v,m)=>quota(it,v,m)), rR=sum(ri,(it,v)=>v.amount);
+  const stip=months.map(salaryAt);
+  let fondo=0;const fondoRow=months.map((m,i)=>(fondo+=qS[i]-realS[i]));
+  const tr=(lab,arr,cls="")=>`<tr><td>${lab}</td>${arr.map((v,i)=>`<td class="num ${cls} ${months[i]===cur?"cur":""}">${EU(v).replace(/\s?€/,"")}</td>`).join("")}</tr>`;
+  return `<section><div class="label">Calendario degli addebiti ${y}</div>
+  <p class="foot">In arancio le spese non mensili nel mese in cui vengono addebitate per intero. In corsivo con ~ le bollette stimate, non ancora arrivate. Importi in euro.</p>
+  <div class="cal"><table>
+   <thead><tr><th>Voce</th>${months.map(m=>`<th class="${m===cur?"cur":""}">${MBREVI[mIdx(m)%12]}</th>`).join("")}</tr></thead>
+   <tbody>${sp.map(it=>`<tr><td title="${esc(it.name)}">${esc(it.name)}</td>${months.map(m=>cell(it,m)).join("")}</tr>`).join("")}
+   ${ri.map(it=>`<tr><td title="${esc(it.name)}" style="color:var(--save)">${esc(it.name)}</td>${months.map(m=>cell(it,m)).join("")}</tr>`).join("")}</tbody>
+   <tfoot>${tr("Spese addebitate",realS)}${tr("Quota accantonata",qS)}${tr("Fondo scadenze",fondoRow)}${tr("Risparmi",rR)}${tr("Libero",months.map((m,i)=>stip[i]-qS[i]-rR[i]))}</tfoot>
+  </table></div>
+  <p class="foot">Il fondo scadenze mostra quanto avresti messo da parte da gennaio accantonando ogni mese la quota e pagando gli addebiti reali. Se scende sotto zero, una scadenza arriva prima che l'accantonamento l'abbia coperta.</p>
+  </section>`;
+}
+
+function vImp(){
+  const hist=[...state.salary].sort((a,b)=>mIdx(b.from)-mIdx(a.from));
+  bindTab=()=>{
+    document.getElementById("salBtn").onclick=openSalary;
+    document.querySelectorAll("[data-delsal]").forEach(b=>b.onclick=()=>{state.salary=state.salary.filter(s=>s.from!==b.dataset.delsal);commit("Variazione rimossa")});
+    document.getElementById("exp").onclick=exportData;document.getElementById("imp").onclick=openImport;
+  };
+  return `<section><div class="label">Stipendio netto mensile</div>
+   <div class="ledger">${hist.length?hist.map(s=>`<div class="row"><span class="t">Da ${mNome(s.from)}</span><span class="amt num">${EU(s.amount)} <button class="del" data-delsal="${s.from}" aria-label="Rimuovi variazione di ${mNome(s.from)}">Rimuovi</button></span></div>`).join(""):`<div class="empty">Nessuno stipendio inserito.</div>`}</div>
+   <div class="actions"><button class="btn primary" id="salBtn">Cambia stipendio</button></div>
+   <p class="foot">Ogni cambio vale dal mese indicato in poi: i mesi precedenti mantengono lo stipendio di allora.</p></section>
+   <section><div class="label">Backup</div>
+   <p class="foot">Esporta un file con tutte le voci e lo storico: scegli <b>Salva su File</b> o iCloud Drive. Ti serve se cambi iPhone o cancelli i dati di Safari.</p>
+   <div class="actions inline" style="display:grid;grid-template-columns:1fr 1fr"><button class="btn" id="exp">Esporta dati</button><button class="btn" id="imp">Importa dati</button></div></section>
+   <section><div class="label">Informazioni</div><p class="foot">Versione ${VERSIONE}</p></section>
+   <section><div class="label">Installala su iPhone</div>
+   <p class="foot">Se la stai usando da Safari, tocca Condividi e scegli <b>Aggiungi alla schermata Home</b>. Dall’icona si apre a schermo intero e funziona anche senza rete.</p></section>`;
+}
+
+/* ===== Fogli modali ===== */
+const host=document.getElementById("sheetHost");
+function sheet(title,body,onMount){
+  host.innerHTML=`<div class="sheet-bg" id="sbg"><div class="sheet" id="sh" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="sheet-head" id="shH"><div class="grab" aria-hidden="true"></div><header><button class="btn sm plain" id="sx">Annulla</button><h2>${esc(title)}</h2><span style="min-width:72px"></span></header></div><div class="sheet-body">${body}</div></div></div>`;
+  document.body.classList.add("locked");
+  const close=()=>{host.innerHTML="";document.body.classList.remove("locked")};
+  const sh=document.getElementById("sh");let y0=null,dy=0;
+  const hd=document.getElementById("shH");
+  hd.addEventListener("touchstart",e=>{if(e.target.closest("button"))return;y0=e.touches[0].clientY},{passive:true});
+  hd.addEventListener("touchmove",e=>{if(y0===null)return;dy=Math.max(0,e.touches[0].clientY-y0);sh.style.transform=`translateY(${dy}px)`},{passive:true});
+  hd.addEventListener("touchend",()=>{if(y0===null)return;if(dy>110)close();else{sh.style.transition="transform .2s";sh.style.transform="";setTimeout(()=>sh&&(sh.style.transition=""),220)}y0=null;dy=0});
+  document.getElementById("sx").onclick=close;
+  document.getElementById("sbg").onclick=e=>{if(e.target.id==="sbg")close()};
+  onMount(close);
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){host.innerHTML="";document.body.classList.remove("locked")}});
+
+function openSalary(){
+  sheet("Stipendio netto",`
+   <div class="group"><div class="field"><label for="sAmt">Importo netto mensile (€)</label><input id="sAmt" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="2.150,00" value="${salaryAt(cur)?String(salaryAt(cur)).replace(".",","):""}"></div>
+   <div class="field"><label for="sFrom">Valido dal mese</label><input id="sFrom" type="month" value="${cur}"><span class="hint">I mesi precedenti restano con lo stipendio di allora.</span></div></div>
+   <div id="sErr" class="err"></div><div class="actions"><button class="btn primary" id="sOk">Salva stipendio</button></div>`,close=>{
+   document.getElementById("sOk").onclick=()=>{
+     const a=parseNum(document.getElementById("sAmt").value),f=document.getElementById("sFrom").value;
+     if(!(a>=0)||!f){document.getElementById("sErr").textContent="Inserisci un importo valido e un mese.";return}
+     state.salary=state.salary.filter(s=>s.from!==f);state.salary.push({from:f,amount:a});close();commit("Stipendio salvato");
+   };});
+}
+
+function openItem(id){
+  const it=id?state.items.find(i=>i.id===id):null;
+  const v=it?(versionAt(it,cur)||it.versions[it.versions.length-1]):{amount:"",cadence:1,anchor:cur};
+  let kind=it?it.kind:"spesa";
+  const cats=[...CATEGORIE,"Investimenti"];
+  sheet(it?"Modifica voce":"Nuova voce",`
+   <div class="seg" role="group" aria-label="Tipo"><button id="kS" type="button">Spesa fissa</button><button id="kR" type="button">Risparmio / PAC</button></div>
+   <div class="group" id="varG"><label class="field toggle" for="iVar"><span>Importo variabile<span class="hint">Per le bollette: registri ogni importo reale</span></span><input type="checkbox" class="switch" id="iVar" ${it?.variable?"checked":""}></label></div>
+   <div class="group"><div class="field"><label for="iName">Nome</label><input id="iName" value="${esc(it?.name||"")}" placeholder="Es. Assicurazione casa" autocapitalize="sentences" autocomplete="off" enterkeyhint="next"></div>
+    <div class="field"><label for="iAmt" id="amtLab">Importo di ogni addebito (€)</label><input id="iAmt" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="0,00" value="${v.amount!==""?String(v.amount).replace(".",","):""}"></div>
+    <div class="field" id="cadF"><label for="iCad">Cadenza</label><select id="iCad">${Object.entries(CADENZE).map(([k,l])=>`<option value="${k}" ${+k===v.cadence?"selected":""}>${l}</option>`).join("")}</select></div>
+    <div class="field" id="covF"><label for="iCov">Periodo coperto da ogni bolletta</label><select id="iCov"><option value="prima" ${it?.coverage!=="incluso"?"selected":""}>I mesi prima del pagamento</option><option value="incluso" ${it?.coverage==="incluso"?"selected":""}>Fino al mese del pagamento</option></select><span class="hint" id="covH"></span></div>
+    <div class="field" id="ancF"><label for="iAnc" id="ancLab">Mese di un addebito</label><input id="iAnc" type="month" value="${v.anchor}"><span class="hint">Un mese qualsiasi in cui arriva il pagamento: da qui si calcolano gli altri.</span></div>
+    <div class="field"><label for="iCat">Categoria</label><select id="iCat">${cats.map(c=>`<option ${c===(it?.category||"Casa")?"selected":""}>${c}</option>`).join("")}</select></div>
+   </div>
+   ${it?`<section id="billS"><div class="label">Bollette registrate</div><div class="ledger">${Object.keys(it.bills||{}).sort((a,b)=>mIdx(b)-mIdx(a)).map(k=>`<div class="row click" data-bm="${k}"><span class="t" style="text-transform:capitalize">${mNome(k)}</span><span class="amt num">${EU(it.bills[k])}</span></div>`).join("")||`<div class="empty">Ancora nessuna. Registra l'ultima bolletta arrivata.</div>`}</div><button class="btn" id="iAddB">Registra una bolletta</button></section>`:`<p class="foot" id="billS">Dopo aver salvato la voce potrai registrare le bollette arrivate.</p>`}
+   <div class="group"><div class="field"><label for="iFrom">${it?"Modifica valida dal mese":"Attiva dal mese"}</label><input id="iFrom" type="month" value="${cur}"><span class="hint">${it?"I mesi precedenti mantengono i valori di prima.":"Da questo mese la voce entra nel calcolo."}</span></div></div>
+   <div class="preview"><span id="pvLab">Quota mensile</span><b id="pv">—</b></div>
+   <div id="iErr" class="err"></div>
+   <div class="actions"><button class="btn primary" id="iOk">${it?"Salva modifiche":"Aggiungi voce"}</button>
+    ${it?(it.endedAt?`<button class="btn" id="iRe">Riattiva</button>`:`<button class="btn" id="iSus">Sospendi da ${MBREVI[mIdx(cur)%12]}</button>`)+`<button class="btn danger" id="iDel">Elimina</button>`:""}</div>
+   <div id="iConf"></div>`,close=>{
+    const $=i=>document.getElementById(i);
+    const upd=()=>{
+      $("kS").setAttribute("aria-pressed",kind==="spesa");$("kR").setAttribute("aria-pressed",kind==="risparmio");
+      const vr=kind==="spesa"&&$("iVar").checked;
+      $("cadF").hidden=kind==="risparmio";$("ancF").hidden=kind==="risparmio";$("varG").hidden=kind==="risparmio";
+      $("covF").hidden=!vr;$("billS").hidden=!vr;
+      $("amtLab").textContent=kind==="risparmio"?"Versamento mensile (€)":vr?"Stima di una bolletta (€)":"Importo di ogni addebito (€)";
+      $("ancLab").textContent=vr?"Mese di una bolletta":"Mese di un addebito";
+      const a=parseNum($("iAmt").value),c=+$("iCad").value;
+      {const B=mIdx(OGGI),o=$("iCov").value==="incluso"?0:1,ms=[...Array(c)].map((_,i)=>MESI[(B-o-c+1+i)%12]);
+       $("covH").textContent=`Esempio: la bolletta pagata a ${MESI[B%12]} si divide su ${ms.length>1?ms.slice(0,-1).join(", ")+" e "+ms.at(-1):ms[0]}.`}
+      if(vr&&a>0){$("pvLab").textContent="Quota usata finché non registri bollette vere";$("pv").textContent=EU(a/c);return}
+      if(!(a>0)){$("pv").textContent="—";$("pvLab").textContent="Quota mensile";return}
+      if(kind==="risparmio"){$("pvLab").textContent="Esce ogni mese, conteggiato nei risparmi";$("pv").textContent=EU(a)}
+      else{$("pvLab").textContent=c===1?"Quota mensile":`Quota mensile (${EU(a)} ÷ ${c} mesi)`;$("pv").textContent=EU(a/c)}
+    };
+    $("kS").onclick=()=>{kind="spesa";upd()};$("kR").onclick=()=>{kind="risparmio";if($("iCat").value!=="Investimenti")$("iCat").value="Investimenti";upd()};
+    ["iAmt","iCad","iCov","iVar"].forEach(i=>{$(i).oninput=upd;$(i).onchange=upd});upd();
+    if(it&&$("iAddB")){$("iAddB").onclick=()=>openBill(it.id,cur);document.querySelectorAll("[data-bm]").forEach(e=>e.onclick=()=>openBill(it.id,e.dataset.bm))}
+    $("iOk").onclick=()=>{
+      const name=$("iName").value.trim(),a=parseNum($("iAmt").value),from=$("iFrom").value;
+      const cad=kind==="risparmio"?1:+$("iCad").value,anchor=kind==="risparmio"?from:($("iAnc").value||from);
+      if(!name){$("iErr").textContent="Dai un nome alla voce.";return}
+      if(!(a>0)){$("iErr").textContent="Inserisci un importo maggiore di zero, ad esempio 120,50.";return}
+      if(!from){$("iErr").textContent="Scegli il mese da cui vale.";return}
+      const ver={from,amount:a,cadence:cad,anchor};
+      const vr=kind==="spesa"&&$("iVar").checked,cov=$("iCov").value;
+      if(it){it.name=name;it.kind=kind;it.category=$("iCat").value;it.variable=vr;it.coverage=cov;if(vr&&!it.bills)it.bills={};it.versions=it.versions.filter(x=>x.from!==from);it.versions.push(ver);
+        if(it.endedAt&&mIdx(it.endedAt)<=mIdx(from))it.endedAt=null}
+      else state.items.push({id:uid(),name,kind,category:$("iCat").value,endedAt:null,variable:vr,coverage:cov,bills:{},versions:[ver]});
+      close();commit(it?"Modifiche salvate":"Voce aggiunta");
+    };
+    if(it){
+      if($("iSus"))$("iSus").onclick=()=>{it.endedAt=cur;close();commit(`Sospesa da ${mNome(cur)}`)};
+      if($("iRe"))$("iRe").onclick=()=>{it.endedAt=null;close();commit("Voce riattivata")};
+      $("iDel").onclick=()=>{$("iConf").innerHTML=`<div class="confirm"><span>Eliminare <b>${esc(it.name)}</b> anche da tutti i mesi passati? Per smettere di contarla da ora in poi usa Sospendi.</span><div class="actions"><button class="btn danger" id="iDel2">Elimina definitivamente</button><button class="btn" id="iNo">Annulla</button></div></div>`;
+        $("iDel2").onclick=()=>{state.items=state.items.filter(x=>x!==it);close();commit("Voce eliminata")};$("iNo").onclick=()=>$("iConf").innerHTML="";$("iConf").scrollIntoView({behavior:"smooth",block:"end"})};
+    }
+  });
+}
+
+function openBill(id,m){
+  const it=state.items.find(i=>i.id===id);if(!it)return;
+  const v=versionAt(it,m)||it.versions[it.versions.length-1];
+  if(!it.bills)it.bills={};const had=it.bills[m]!=null;
+  const est=billEst(it,v,mIdx(m));
+  sheet(it.name,`
+   <div class="group"><div class="field"><label for="bAmt">Importo della bolletta (€)</label><input id="bAmt" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="${est.amt.toFixed(2).replace(".",",")}" value="${had?String(it.bills[m]).replace(".",","):""}"></div>
+    <div class="field"><label for="bM">Mese in cui la paghi</label><input id="bM" type="month" value="${m}"></div></div>
+   <p class="foot">${had?"":`Finché non la inserisci l'app usa ${EU(est.amt)} (${est.how}).`}</p>
+   <div class="preview"><span id="bPv"></span><b id="bQ"></b></div>
+   <div id="bErr" class="err"></div>
+   <div class="actions"><button class="btn primary" id="bOk">${had?"Salva bolletta":"Registra bolletta"}</button>${had?`<button class="btn danger" id="bDel">Rimuovi questa bolletta</button>`:""}</div>`,close=>{
+    const $=i=>document.getElementById(i);
+    const upd=()=>{const a=parseNum($("bAmt").value),mm=$("bM").value;if(!mm)return;const B=mIdx(mm),o=covOff(it),c=v.cadence;
+      const ms=[...Array(c)].map((_,i)=>MESI[(B-o-c+1+i)%12]);
+      $("bPv").textContent="Si divide su "+(ms.length>1?ms.slice(0,-1).join(", ")+" e "+ms.at(-1):ms[0]);
+      $("bQ").textContent=a>0?EU(a/c)+" al mese":""};
+    $("bAmt").oninput=upd;$("bM").onchange=upd;$("bM").oninput=upd;upd();
+    $("bOk").onclick=()=>{const a=parseNum($("bAmt").value),mm=$("bM").value;
+      if(!(a>0)){$("bErr").textContent="Inserisci l'importo della bolletta, ad esempio 167 o 167,40.";return}
+      if(!mm){$("bErr").textContent="Scegli il mese in cui la paghi.";return}
+      if(had&&mm!==m)delete it.bills[m];it.bills[mm]=a;close();commit(`Bolletta di ${MESI[mIdx(mm)%12]} registrata`)};
+    if(had)$("bDel").onclick=()=>{delete it.bills[m];close();commit("Bolletta rimossa")};
+  });
+}
+
+async function exportData(){
+  const json=JSON.stringify({...state,sample:false},null,1);
+  try{const f=new File([json],`quote-fisse-${OGGI}.json`,{type:"application/json"});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"Backup Quote Fisse"});return}}catch(e){if(e&&e.name==="AbortError")return}
+  sheet("Esporta dati",`<div class="group"><div class="field"><label for="exT">Copia questo testo e incollalo in Note o in un messaggio a te stessa</label><textarea id="exT" readonly>${esc(json)}</textarea></div></div><div class="actions"><button class="btn primary" id="cp">Copia</button></div>`,()=>{
+    document.getElementById("cp").onclick=async()=>{const t=document.getElementById("exT");try{await navigator.clipboard.writeText(t.value);toast("Copiato")}catch(e){t.select()}}});
+}
+function openImport(){
+  sheet("Importa dati",`<div class="group"><div class="field"><label for="imF">Scegli il file di backup da File</label><input id="imF" type="file" accept=".json,application/json"></div>
+   <div class="field"><label for="imT">Oppure incolla il testo esportato</label><textarea id="imT"></textarea><span class="hint">I dati attuali verranno sostituiti.</span></div></div>
+   <div class="actions"><button class="btn primary" id="imOk">Importa e sostituisci</button></div><div id="imErr" class="err"></div>`,close=>{
+   document.getElementById("imF").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>document.getElementById("imT").value=r.result;r.readAsText(f)};
+   document.getElementById("imOk").onclick=()=>{try{const d=JSON.parse(document.getElementById("imT").value);if(!Array.isArray(d.items)||!Array.isArray(d.salary))throw 0;state={...d,sample:false};close();commit("Dati importati")}catch(e){document.getElementById("imErr").textContent="Il testo non è un backup di Quote Fisse valido."}};});
+}
+
+/* ===== Avvio ===== */
+document.getElementById("prevM").onclick=()=>{cur=mAdd(cur,-1);render()};
+document.getElementById("nextM").onclick=()=>{cur=mAdd(cur,1);render()};
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render();window.scrollTo(0,0)});
+document.getElementById("fab").onclick=()=>openItem(null);
+let sx0=null,sy0=null;
+view.addEventListener("touchstart",e=>{if(e.target.closest(".cal")){sx0=null;return}sx0=e.touches[0].clientX;sy0=e.touches[0].clientY},{passive:true});
+view.addEventListener("touchend",e=>{if(sx0===null)return;const dx=e.changedTouches[0].clientX-sx0,dy=e.changedTouches[0].clientY-sy0;sx0=null;
+  if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.6&&(tab==="mese"||tab==="voci")){cur=mAdd(cur,dx<0?1:-1);render()}},{passive:true});
+state=lsGet()||esempio();
+render();
+try{navigator.storage?.persist?.()}catch(e){}
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}))}
+</script>
+
+</body>
+</html>
