@@ -1,6 +1,6 @@
 // Quote Fisse: tiene in cache l'app così si apre anche senza rete.
 // Quando pubblichi una nuova versione, cambia il numero qui sotto.
-const CACHE = "quote-fisse-v1";
+const CACHE = "quote-fisse-v2";
 const FILES = ["./", "./index.html", "./manifest.json", "./icons/apple-touch-icon.png", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", e => {
