@@ -26,11 +26,11 @@
   --f-num:-apple-system, "SF Pro Text", system-ui, sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#000000; --surface:#1C1C1E; --sunk:#2C2C2E; --ink:#FFFFFF; --muted:#98989F; --line:#38383A;
+  --bg:#000000; --surface:#1C1C1E; --sunk:#2C2C2E; --ink:#FFFFFF; --muted:#AEAEB2; --line:#48484A;
   --accent:#3CC79E; --accent-ink:#00140E; --save:#7D7AFF; --charge:#FFA53A; --neg:#FF6961;
   --bar:rgb(22 22 24 / .86); --press:#3A3A3C; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#000000; --surface:#1C1C1E; --sunk:#2C2C2E; --ink:#FFFFFF; --muted:#98989F; --line:#38383A;
+  --bg:#000000; --surface:#1C1C1E; --sunk:#2C2C2E; --ink:#FFFFFF; --muted:#AEAEB2; --line:#48484A;
   --accent:#3CC79E; --accent-ink:#00140E; --save:#7D7AFF; --charge:#FFA53A; --neg:#FF6961;
   --bar:rgb(22 22 24 / .86); --press:#3A3A3C; color-scheme:dark}
 
@@ -120,18 +120,28 @@ nav.tabs button[aria-current="true"]{color:var(--accent)}
 .fab:active{transform:scale(.94)}
 
 .sheet-bg{position:fixed;inset:0;z-index:20;background:rgb(0 0 0 / .4);display:flex;align-items:flex-end;justify-content:center}
-.sheet{background:var(--bg);width:100%;max-width:560px;max-height:calc(100dvh - env(safe-area-inset-top,0px) - 10px);overflow:auto;overscroll-behavior:contain;border-radius:14px 14px 0 0;padding:6px max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:16px}
-.grab{width:36px;height:5px;border-radius:3px;background:var(--press);margin:0 auto;flex:none}
-.sheet header{display:flex;align-items:center;gap:10px;position:sticky;top:-6px;background:var(--bg);z-index:1;padding-block:4px}
-.sheet header h2{flex:1;font-size:17px;font-weight:600;text-align:center}
+/* Foglio dal basso: parte alta fissa (maniglia + titolo), parte sotto che scorre sempre */
+.sheet{background:var(--bg);width:100%;max-width:560px;height:calc(100vh - 12px);height:calc(100dvh - env(safe-area-inset-top,0px) - 12px);border-radius:14px 14px 0 0;display:flex;flex-direction:column;overflow:hidden}
+.sheet-head{flex:none;padding:8px max(16px,env(safe-area-inset-right,0px)) 6px max(16px,env(safe-area-inset-left,0px));touch-action:none;cursor:grab;border-bottom:.5px solid var(--line)}
+.sheet-body{flex:1 1 auto;min-height:0;display:block;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:16px max(16px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.sheet-body>*+*{margin-top:16px}
+.sheet-body>[hidden]+*{margin-top:16px}
+.grab{width:36px;height:5px;border-radius:3px;background:var(--press);margin:0 auto 6px}
+.sheet header{display:flex;align-items:center;gap:10px}
+.sheet header h2{flex:1;font-size:17px;font-weight:600;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sheet header .btn{min-width:72px}
+.field input[type="month"]{display:block;text-align:left}
+.field input::-webkit-date-and-time-value{text-align:left}
 .group{background:var(--surface);border-radius:12px;overflow:hidden}
-.field{position:relative;display:flex;flex-direction:column;gap:2px;padding:10px 16px}
+.field{position:relative;display:flex;flex-direction:column;gap:4px;padding:12px 16px}
 .field+.field::before{content:"";position:absolute;top:0;left:16px;right:0;border-top:.5px solid var(--line)}
-.field label{font-size:13px;color:var(--muted)}
-.field .hint{font-size:13px;color:var(--muted)}
+.field label{font-size:14px;color:var(--muted);font-weight:500}
+.field .hint{font-size:14px;color:var(--muted);line-height:1.35}
 .field input,.field select,.field textarea{width:100%;padding:4px 0;border:0;background:none;font-size:17px;outline:none;min-height:32px;-webkit-appearance:none;appearance:none}
-.field select{background:none}
+.field select{background:none;padding-right:28px;color:var(--accent);font-weight:500}
+.field:has(select)::after{content:"";position:absolute;right:20px;top:46px;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);pointer-events:none}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted);opacity:.7}
+.field input[type="month"]{color:var(--accent);font-weight:500}
 .field textarea{font-family:ui-monospace,"SF Mono",monospace;font-size:13px;min-height:140px}
 .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--sunk);border-radius:9px;padding:2px;gap:2px}
 .seg button{border:0;background:none;min-height:32px;border-radius:7px;cursor:pointer;font-weight:500;font-size:14px}
@@ -140,7 +150,8 @@ nav.tabs button[aria-current="true"]{color:var(--accent)}
 .preview b{font-size:22px;color:var(--ink)}
 .confirm{background:var(--surface);border-radius:12px;padding:14px 16px;font-size:15px;display:flex;flex-direction:column;gap:10px}
 .toggle{flex-direction:row!important;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
-.toggle>span{display:flex;flex-direction:column;font-size:17px;color:var(--ink)}
+.toggle>span{display:flex;flex-direction:column;gap:3px;font-size:17px;color:var(--ink);min-width:0}
+.toggle{min-height:64px}
 .field input.switch{-webkit-appearance:none;appearance:none;width:51px;min-height:31px;height:31px;padding:0;border-radius:16px;background:var(--sunk);position:relative;flex:none;cursor:pointer;transition:background .2s;margin:0}
 .field input.switch::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgb(0 0 0 / .25);transition:transform .2s}
 .field input.switch:checked{background:var(--accent)}
@@ -188,6 +199,7 @@ const mAdd=(m,n)=>mStr(mIdx(m)+n);
 const mNome=m=>`${MESI[mIdx(m)%12]} ${Math.floor(mIdx(m)/12)}`;
 const today=new Date();const OGGI=mStr(today.getFullYear()*12+today.getMonth());
 
+const VERSIONE="1.4 · 30 ottobre 2026";
 const CADENZE={1:"Mensile",2:"Bimestrale",3:"Trimestrale",6:"Semestrale",12:"Annuale"};
 const CATEGORIE=["Casa","Utenze","Assicurazioni","Trasporti","Abbonamenti","Salute","Tasse","Famiglia","Altro"];
 const eur=new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR"});
@@ -380,6 +392,7 @@ function vImp(){
    <section><div class="label">Backup</div>
    <p class="foot">Esporta un file con tutte le voci e lo storico: scegli <b>Salva su File</b> o iCloud Drive. Ti serve se cambi iPhone o cancelli i dati di Safari.</p>
    <div class="actions inline" style="display:grid;grid-template-columns:1fr 1fr"><button class="btn" id="exp">Esporta dati</button><button class="btn" id="imp">Importa dati</button></div></section>
+   <section><div class="label">Informazioni</div><p class="foot">Versione ${VERSIONE}</p></section>
    <section><div class="label">Installala su iPhone</div>
    <p class="foot">Se la stai usando da Safari, tocca Condividi e scegli <b>Aggiungi alla schermata Home</b>. Dall’icona si apre a schermo intero e funziona anche senza rete.</p></section>`;
 }
@@ -387,13 +400,14 @@ function vImp(){
 /* ===== Fogli modali ===== */
 const host=document.getElementById("sheetHost");
 function sheet(title,body,onMount){
-  host.innerHTML=`<div class="sheet-bg" id="sbg"><div class="sheet" id="sh" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="grab" aria-hidden="true"></div><header><button class="btn sm plain" id="sx">Annulla</button><h2>${esc(title)}</h2><span style="min-width:72px"></span></header>${body}</div></div>`;
+  host.innerHTML=`<div class="sheet-bg" id="sbg"><div class="sheet" id="sh" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="sheet-head" id="shH"><div class="grab" aria-hidden="true"></div><header><button class="btn sm plain" id="sx">Annulla</button><h2>${esc(title)}</h2><span style="min-width:72px"></span></header></div><div class="sheet-body">${body}</div></div></div>`;
   document.body.classList.add("locked");
   const close=()=>{host.innerHTML="";document.body.classList.remove("locked")};
   const sh=document.getElementById("sh");let y0=null,dy=0;
-  sh.addEventListener("touchstart",e=>{if(sh.scrollTop<=0&&!e.target.closest("input,select,textarea"))y0=e.touches[0].clientY;else y0=null},{passive:true});
-  sh.addEventListener("touchmove",e=>{if(y0===null)return;dy=Math.max(0,e.touches[0].clientY-y0);sh.style.transform=`translateY(${dy}px)`},{passive:true});
-  sh.addEventListener("touchend",()=>{if(y0===null)return;if(dy>110)close();else{sh.style.transition="transform .2s";sh.style.transform="";setTimeout(()=>sh&&(sh.style.transition=""),220)}y0=null;dy=0});
+  const hd=document.getElementById("shH");
+  hd.addEventListener("touchstart",e=>{if(e.target.closest("button"))return;y0=e.touches[0].clientY},{passive:true});
+  hd.addEventListener("touchmove",e=>{if(y0===null)return;dy=Math.max(0,e.touches[0].clientY-y0);sh.style.transform=`translateY(${dy}px)`},{passive:true});
+  hd.addEventListener("touchend",()=>{if(y0===null)return;if(dy>110)close();else{sh.style.transition="transform .2s";sh.style.transform="";setTimeout(()=>sh&&(sh.style.transition=""),220)}y0=null;dy=0});
   document.getElementById("sx").onclick=close;
   document.getElementById("sbg").onclick=e=>{if(e.target.id==="sbg")close()};
   onMount(close);
@@ -427,7 +441,7 @@ function openItem(id){
     <div class="field" id="ancF"><label for="iAnc" id="ancLab">Mese di un addebito</label><input id="iAnc" type="month" value="${v.anchor}"><span class="hint">Un mese qualsiasi in cui arriva il pagamento: da qui si calcolano gli altri.</span></div>
     <div class="field"><label for="iCat">Categoria</label><select id="iCat">${cats.map(c=>`<option ${c===(it?.category||"Casa")?"selected":""}>${c}</option>`).join("")}</select></div>
    </div>
-   ${it?`<section id="billS" style="margin-top:4px"><div class="label">Bollette registrate</div><div class="ledger">${Object.keys(it.bills||{}).sort((a,b)=>mIdx(b)-mIdx(a)).map(k=>`<div class="row click" data-bm="${k}"><span class="t" style="text-transform:capitalize">${mNome(k)}</span><span class="amt num">${EU(it.bills[k])}</span></div>`).join("")||`<div class="empty">Ancora nessuna. Registra l'ultima bolletta arrivata.</div>`}</div><button class="btn" id="iAddB">Registra una bolletta</button></section>`:`<p class="foot" id="billS">Dopo aver salvato la voce potrai registrare le bollette arrivate.</p>`}
+   ${it?`<section id="billS"><div class="label">Bollette registrate</div><div class="ledger">${Object.keys(it.bills||{}).sort((a,b)=>mIdx(b)-mIdx(a)).map(k=>`<div class="row click" data-bm="${k}"><span class="t" style="text-transform:capitalize">${mNome(k)}</span><span class="amt num">${EU(it.bills[k])}</span></div>`).join("")||`<div class="empty">Ancora nessuna. Registra l'ultima bolletta arrivata.</div>`}</div><button class="btn" id="iAddB">Registra una bolletta</button></section>`:`<p class="foot" id="billS">Dopo aver salvato la voce potrai registrare le bollette arrivate.</p>`}
    <div class="group"><div class="field"><label for="iFrom">${it?"Modifica valida dal mese":"Attiva dal mese"}</label><input id="iFrom" type="month" value="${cur}"><span class="hint">${it?"I mesi precedenti mantengono i valori di prima.":"Da questo mese la voce entra nel calcolo."}</span></div></div>
    <div class="preview"><span id="pvLab">Quota mensile</span><b id="pv">—</b></div>
    <div id="iErr" class="err"></div>

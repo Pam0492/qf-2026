@@ -1,26 +1,32 @@
-// Quote Fisse: tiene in cache l'app così si apre anche senza rete.
+// Quote Fisse: funziona anche senza rete.
+// Con la rete prende sempre la versione più recente della pagina; senza rete usa quella salvata.
 // Quando pubblichi una nuova versione, cambia il numero qui sotto.
-const CACHE = "quote-fisse-v2";
+const CACHE = "quote-fisse-v4";
 const FILES = ["./", "./index.html", "./manifest.json", "./icons/apple-touch-icon.png", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: "reload" })))).then(() => self.skipWaiting()));
 });
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
-// Prima la cache (apertura istantanea, anche offline); in background prova ad aggiornare.
 self.addEventListener("fetch", e => {
-  if (e.request.method !== "GET") return;
-  e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then(hit => {
-      const net = fetch(e.request).then(res => {
-        if (res && res.ok && new URL(e.request.url).origin === location.origin) {
-          const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy));
-        }
+  const req = e.request;
+  if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
+  const isPage = req.mode === "navigate" || req.destination === "document";
+  if (isPage) {
+    // Prima la rete (aggiornamenti subito), poi la copia salvata se sei offline
+    e.respondWith(
+      fetch(req, { cache: "no-store" }).then(res => {
+        if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put("./index.html", copy)); }
         return res;
-      }).catch(() => hit || caches.match("./index.html"));
-      return hit || net;
-    })
-  );
+      }).catch(() => caches.match("./index.html").then(r => r || caches.match("./")))
+    );
+    return;
+  }
+  // Icone e altri file: prima la copia salvata
+  e.respondWith(caches.match(req, { ignoreSearch: true }).then(hit => hit || fetch(req).then(res => {
+    if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
+    return res;
+  })));
 });
