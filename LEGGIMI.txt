@@ -1,0 +1,31 @@
+QUOTE FISSE - versione offline per iPhone
+==========================================
+
+Contenuto della cartella (caricala tutta, così com'è):
+  index.html      l'app
+  sw.js           fa funzionare l'app senza rete
+  manifest.json   nome e icona per la schermata Home
+  icons/          icone
+
+PUBBLICARLA GRATIS CON GITHUB PAGES (una volta sola, da computer)
+1. Crea un account gratuito su github.com.
+2. In alto a destra: "+" > "New repository". Nome: quote-fisse. Scegli "Public". Crea.
+3. Nella pagina del repository: "uploading an existing file".
+   Trascina dentro TUTTO il contenuto di questa cartella (anche la cartella icons). "Commit changes".
+4. Settings > Pages > Source: "Deploy from a branch", Branch: "main", cartella "/ (root)". Save.
+5. Dopo 1-2 minuti l'indirizzo sarà:  https://TUO-NOME-UTENTE.github.io/quote-fisse/
+
+INSTALLARLA SULL'IPHONE
+1. Apri quell'indirizzo con SAFARI (con la rete, solo questa volta).
+2. Tocca Condividi (quadrato con la freccia) > "Aggiungi alla schermata Home" > Aggiungi.
+3. Apri l'app dall'icona sulla Home e chiudila: da ora funziona anche in modalità aereo.
+
+DATI
+- I dati restano solo sull'iPhone, dentro l'app della Home (non in Safari e non online).
+- Fai ogni tanto un backup: scheda Stipendio > Esporta dati > Salva su File (iCloud Drive).
+- Se avevi già inserito dati nella versione su claude.ai: lì fai Esporta dati, qui Importa dati.
+- Non eliminare l'icona dalla Home senza un backup: cancellarla cancella anche i dati.
+
+AGGIORNAMENTI
+Se carichi una nuova versione di index.html, cambia anche "quote-fisse-v1" in "quote-fisse-v2" dentro sw.js.
+L'iPhone prenderà la nuova versione alla seconda apertura con la rete.
