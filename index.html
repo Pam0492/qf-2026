@@ -348,7 +348,7 @@ const mAdd=(m,n)=>mStr(mIdx(m)+n);
 const mNome=m=>`${MESI[mIdx(m)%12]} ${Math.floor(mIdx(m)/12)}`;
 const today=new Date();const OGGI=mStr(today.getFullYear()*12+today.getMonth());
 
-const VERSIONE="3.2 · 30 ottobre 2026";
+const VERSIONE="3.2.1 · 30 ottobre 2026";
 const CADENZE={1:"Mensile",2:"Bimestrale",3:"Trimestrale",6:"Semestrale",12:"Annuale",24:"Biennale"};
 const CATEGORIE=["Casa","Utenze","Assicurazioni","Trasporti","Abbonamenti","Salute","Tasse","Famiglia","Altro"];
 const eur=new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR"});
@@ -987,7 +987,7 @@ async function saveFiles(files){
     if(dl){for(const f of files)await dl.save({filename:f.name,data:f.text});toast(files.length>1?"File salvati":"File salvato");return}}
   catch(e){if(e&&e.code&&e.code!=="unavailable"){toast("Salvataggio annullato");return}}
   try{const fl=files.map(f=>new File([f.text],f.name,{type:"text/csv"}));
-    if(navigator.canShare&&navigator.canShare({files:fl})){await navigator.share({files:fl,title:"Il Mio Mese"});return}}
+    if(navigator.canShare&&navigator.canShare({files:fl})){await navigator.share({files:fl});return}}
   catch(e){if(e&&e.name==="AbortError")return}
   for(const f of files){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([f.text],{type:"text/csv"}));a.download=f.name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
 }
@@ -1008,7 +1008,7 @@ function openCsv(){
 async function exportData(){
   const json=JSON.stringify({...state,sample:false},null,1);
   try{const f=new File([json],`il-mio-mese-${OGGI}.json`,{type:"application/json"});
-    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"Backup Il Mio Mese"});return}}catch(e){if(e&&e.name==="AbortError")return}
+    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e&&e.name==="AbortError")return}
   sheet("Esporta dati",`<div class="group"><div class="field"><label for="exT">Copia questo testo e incollalo in Note o in un messaggio a te stessa</label><textarea id="exT" readonly>${esc(json)}</textarea></div></div><div class="actions"><button class="btn primary" id="cp">Copia</button></div>`,()=>{
     document.getElementById("cp").onclick=async()=>{const t=document.getElementById("exT");try{await navigator.clipboard.writeText(t.value);toast("Copiato")}catch(e){t.select()}}});
 }
