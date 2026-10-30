@@ -198,6 +198,29 @@ header.top{justify-content:center}
 .roundbtn:active{background:var(--sunk)}
 .roundbtn svg,.ic{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .pn-center{display:flex;flex-direction:column;align-items:center;min-width:0;text-align:center}
+.pnbtn{border:0;background:none;color:var(--ink);min-height:44px;padding:2px 10px;border-radius:14px;cursor:pointer;width:100%}
+.pnbtn:active{background:var(--sunk)}
+.pn-line{display:inline-flex;align-items:center;gap:4px;max-width:100%}
+.pn-line .ic{width:16px;height:16px;stroke-width:2.4;color:var(--accent)}
+.pick{list-style:none;margin:0;padding:0 14px;border-radius:18px;background:var(--surface)}
+.pick li+li{border-top:1px solid var(--line)}
+.pickbtn{width:100%;min-height:60px;border:0;background:none;padding:8px 0;display:flex;align-items:center;gap:12px;text-align:left;color:var(--ink);cursor:pointer}
+.pickbtn[aria-current="true"]{color:var(--accent)}
+.pickbtn[aria-current="true"] .pk-name{font-weight:700}
+.pk-txt{flex:1;min-width:0;display:flex;flex-direction:column}
+.pk-name{font-size:17px;font-weight:600}
+.pk-name::first-letter{text-transform:uppercase}
+.pk-sub{font-size:14px;color:var(--muted)}
+.pk-amt{display:flex;flex-direction:column;align-items:flex-end;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pk-amt b{font-size:16px;color:var(--ink)}
+.pk-amt span{font-size:13px;color:var(--muted);display:inline-flex;align-items:center;gap:4px}
+.pk-amt span.bad{color:var(--neg)}.pk-amt span.warn{color:var(--charge)}
+.pk-amt .ic{width:14px;height:14px}
+.totrow{display:flex;justify-content:space-between;gap:12px;font-size:15px}
+.totrow b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.totrow.big{font-size:17px;font-weight:700;border-top:1px solid var(--line);padding-top:10px}
+.hint{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin:0;padding-inline:4px}
+.hint .ic{width:16px;height:16px}
 .pn-eyebrow{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .pn-label{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .h2row{display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -299,7 +322,7 @@ header.top{justify-content:center}
     <div class="brand" hidden>Il Mio Mese<small id="syncState">Salvato su questo iPhone, funziona offline</small></div>
     <nav class="periodnav" id="mswitch" aria-label="Periodo">
       <button class="roundbtn" id="prevM" aria-label="Periodo precedente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
-      <div class="pn-center"><span class="pn-eyebrow" id="pnEyebrow"></span><span class="pn-label" id="mLabel"></span></div>
+      <button type="button" class="pnbtn" id="pnBtn" aria-haspopup="dialog"><span class="pn-center"><span class="pn-eyebrow" id="pnEyebrow"></span><span class="pn-line"><span class="pn-label" id="mLabel"></span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></span></button>
       <button class="roundbtn" id="nextM" aria-label="Periodo successivo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></button>
     </nav>
   </header>
@@ -325,7 +348,7 @@ const mAdd=(m,n)=>mStr(mIdx(m)+n);
 const mNome=m=>`${MESI[mIdx(m)%12]} ${Math.floor(mIdx(m)/12)}`;
 const today=new Date();const OGGI=mStr(today.getFullYear()*12+today.getMonth());
 
-const VERSIONE="3.0 · 30 ottobre 2026";
+const VERSIONE="3.1 · 30 ottobre 2026";
 const CADENZE={1:"Mensile",2:"Bimestrale",3:"Trimestrale",6:"Semestrale",12:"Annuale",24:"Biennale"};
 const CATEGORIE=["Casa","Utenze","Assicurazioni","Trasporti","Abbonamenti","Salute","Tasse","Famiglia","Altro"];
 const eur=new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR"});
@@ -474,13 +497,14 @@ function render(){
   {const t=state.periodOn?periodShort(cur):mNome(cur);document.getElementById("mLabel").textContent=state.periodOn?t:t.charAt(0).toUpperCase()+t.slice(1)}
   document.getElementById("pnEyebrow").textContent=state.periodOn?`Periodo di ${MESI[mIdx(cur)%12]}`:"Mese";
   document.getElementById("prevM").setAttribute("aria-label",state.periodOn?"Periodo precedente":"Mese precedente");
+  {const r=periodRange(cur);document.getElementById("pnBtn").setAttribute("aria-label",(state.periodOn?`Periodo di ${mNome(cur)}, dal ${dayName(r.start)} al ${dayName(r.end)}`:mNome(cur))+". Tocca per scegliere un altro "+(state.periodOn?"periodo":"mese"))}
   document.getElementById("nextM").setAttribute("aria-label",state.periodOn?"Periodo successivo":"Mese successivo");
   document.querySelector("header.top").hidden=tab==="impostazioni";
   document.getElementById("addbar").hidden=!(tab==="mese"||tab==="spese");
   document.querySelectorAll("nav.tabs button").forEach(b=>{const on=b.dataset.tab===tab||(b.dataset.tab==="voci"&&tab==="calendario");if(on)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
   document.getElementById("banner").innerHTML=state.sample?`<div class="banner"><span><b>Dati di esempio.</b> Modificali o parti da zero: appena salvi una voce diventano tuoi.</span><button class="btn sm plain" id="reset">Parti da zero</button></div>`:"";
   const r=document.getElementById("reset");if(r)r.onclick=()=>{state={sample:false,salary:[],items:[],moves:[]};persist();render();openSalary()};
-  const addLab=tab==="voci"?"+ Voce":"";
+  const addLab="";
   const back=tab==="calendario"?`<button type="button" class="back" data-tabgo="voci"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Pianifica</button>`:"";
   view.innerHTML=(tab==="mese"?"":`${back}<div class="titlebar"><h1 class="largetitle">${({spese:"Movimenti",voci:"Pianifica",calendario:"Calendario "+cur.slice(0,4),impostazioni:"Stipendio"})[tab]}</h1>${addLab?`<button class="addbtn" id="addB">${addLab}</button>`:""}</div>`)+({mese:vMese,spese:vSpese,voci:vVoci,calendario:vCal,impostazioni:vImp})[tab]();
   view.querySelectorAll("[data-edit]").forEach(e=>e.onclick=()=>openItem(e.dataset.edit));
@@ -604,6 +628,7 @@ function vSpese(){
     ${groups.length?`<div class="stack" role="img" aria-label="Suddivisione: ${groups.map(g=>`${esc(g.name)} ${EU(g.tot)}`).join(", ")}">${groups.map(g=>`<i style="flex:${g.tot.toFixed(2)};background:var(${palOf(g.id)[0]})"></i>`).join("")}</div>
     <ul class="leg">${groups.map(g=>`<li><i style="background:var(${palOf(g.id)[0]})"></i><span>${esc(g.name)} <b style="white-space:nowrap;font-weight:600">${EU(g.tot)}</b></span></li>`).join("")}</ul>`:""}
   </section>
+  ${c.mv.length?`<p class="hint" style="margin-top:14px"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>Tocca una spesa per modificarla o eliminarla.</p>`:""}
   ${c.mv.length?`<section><div class="filters" role="group" aria-label="Filtra per budget">${fBtns.map(([id,n])=>`<button type="button" data-filtro="${id}" aria-pressed="${filtro===id}">${esc(n)}</button>`).join("")}</div></section>`:""}
   ${ks.length?ks.map(d=>`<section><h2 class="h2">${dayName(d)}</h2><ul class="mlist">${days[d].map(x=>moveItem(x,false)).join("")}</ul></section>`).join("")
    :`<section><div class="ledger"><div class="empty">${c.mv.length?"Nessuna spesa con questo filtro.":"Nessuna spesa registrata. Tocca Aggiungi spesa per inserirne una, anche un caffè."}</div></div></section>`}`;
@@ -616,6 +641,7 @@ function openMove(id,preBudget){
   const notes=[...new Set([...state.moves].sort((a,b)=>b.date.localeCompare(a.date)).map(m=>m.note).filter(Boolean))].slice(0,5);
   const keys=["1","2","3","4","5","6","7","8","9",",","0","del"];
   sheet(x?"Modifica spesa":"Nuova spesa",`
+   ${x?`<div class="actions inline" style="justify-content:flex-end;margin-top:0"><button type="button" class="btn sm danger" id="mvDel">Elimina spesa</button></div><div id="mvConf"></div>`:""}
    <div class="kphead"><span class="pn-eyebrow" id="kpLbl">Importo</span><output id="kpOut" class="kpout" aria-labelledby="kpLbl" aria-live="polite"></output></div>
    <fieldset class="bset"><legend class="pn-eyebrow">Budget</legend><div class="choices scroll" id="mvB"></div></fieldset>
    <div class="kpgrid" role="group" aria-label="Tastierino">${keys.map(k=>`<button type="button" data-k="${k}" aria-label="${k==="del"?"Cancella l'ultima cifra":k===","?"Virgola":k}">${k==="del"?`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width:26px;height:26px"><path d="M9 5h11v14H9l-6-7z"/><path d="M13 9.5l5 5M18 9.5l-5 5"/></svg>`:k}</button>`).join("")}</div>
@@ -625,7 +651,7 @@ function openMove(id,preBudget){
    <div class="group" id="dayG" hidden><div class="field"><label for="mvDate">Giorno</label><input id="mvDate" type="date" value="${date}"></div></div>
    <div class="group"><div class="field"><label for="mvNote">Descrizione (facoltativa)</label><input id="mvNote" value="${esc(x?.note||"")}" placeholder="Es. caffè, cena, farmacia" autocapitalize="sentences" autocomplete="off" enterkeyhint="done"></div></div>
    ${notes.length?`<div class="suggest" role="group" aria-label="Descrizioni recenti">${notes.map(n=>`<button type="button" data-note="${esc(n)}">${esc(n)}</button>`).join("")}</div>`:""}
-   ${x?`<div class="actions"><button class="btn danger" id="mvDel">Elimina spesa</button></div>`:""}<div id="mvConf"></div>`,close=>{
+   `,close=>{
     const $=i=>document.getElementById(i);
     const amount=()=>parseFloat((dg||"0").replace(",","."))||0;
     const fmt=()=>{const[i,d]=(dg||"0").split(",");return i.replace(/\\B(?=(\\d{3})+(?!\\d))/g,".")+(d!==undefined?","+d:"")+" €"};
@@ -651,7 +677,7 @@ function openMove(id,preBudget){
       if(x)Object.assign(x,rec);else state.moves.push({id:uid(),...rec});
       state.lastBudget=bud;cur=periodOf(date);close();commit(x?"Spesa aggiornata":`Spesa di ${EU(rec.amount)} salvata`)};
     if(x)$("mvDel").onclick=()=>{$("mvConf").innerHTML=`<div class="confirm"><span>Eliminare questa spesa di ${EU(x.amount)}?</span><div class="actions"><button class="btn danger" id="mvDel2">Elimina</button><button class="btn" id="mvNo">Annulla</button></div></div>`;
-      $("mvDel2").onclick=()=>{state.moves=state.moves.filter(m=>m!==x);close();commit("Spesa eliminata")};$("mvNo").onclick=()=>$("mvConf").innerHTML="";$("mvConf").scrollIntoView({behavior:"smooth",block:"end"})};
+      $("mvDel2").onclick=()=>{state.moves=state.moves.filter(m=>m!==x);close();commit("Spesa eliminata")};$("mvNo").onclick=()=>$("mvConf").innerHTML=""};
   },"mvOk");
 }
 
@@ -667,7 +693,7 @@ function itemRow(it){
 }
 function nextCharge(it,v){for(let i=0;i<v.cadence;i++){const m=mAdd(cur,i);if(charged(it,v,m))return MBREVI[mIdx(m)%12]+" "+m.slice(0,4)}return "—"}
 function vVoci(){
-  bindTab=null;
+  bindTab=()=>{document.getElementById("addRic").onclick=()=>openItem(null)};
   const c=monthCalc(cur),y=Math.floor(mIdx(cur)/12);let fondo=0;
   const fs=firstStart();for(let i=Math.max(y*12,fs+1);i<=mIdx(cur);i++){const cc=monthCalc(mStr(i));fondo+=cc.qS-cc.realS}
   const six=[...Array(6)].map((_,i)=>{const m=mAdd(cur,i);return{m,v:monthCalc(m).realS}});
@@ -678,8 +704,16 @@ function vVoci(){
     if(x.c>0&&(v.cadence>1||it.variable||it.rates)){let nota=it.variable?(x.cEst?"Stima: bolletta non ancora arrivata":"Bolletta registrata"):it.rates?`Rata ${Math.floor((mIdx(m)-mIdx(v.anchor))/v.cadence)+1} di ${it.rates}`:CADENZE[v.cadence];ev.push({m,ord:mIdx(m)*100+50,day:"",name:it.name,nota,imp:(x.cEst?"~ ":"")+EU(x.c),plus:false});seen.add(it.id)}}}
   const nx=mAdd(OGGI,1);if(!state.paid[nx]&&salaryAt(nx)>0){const d=arrival(nx);ev.push({m:nx,ord:mIdx(nx)*100+(+d.slice(8,10)),day:String(+d.slice(8,10)),name:"Stipendio",nota:"Previsto, da confermare quando arriva",imp:"+ "+EU(salaryAt(nx)),plus:true})}
   ev.sort((a,b)=>a.ord-b.ord);
-  const intro=`<section class="card" aria-label="Spese fisse">
-    <div class="bigrow"><span>Spese fisse al mese</span><b>${EU(c.qS)}</b></div>
+  const bPlan=c.budgets.reduce((a,b)=>a+b.amt,0);
+  const intro=`<section><button type="button" class="btn primary" id="addRic" style="width:100%">+ Aggiungi spesa ricorrente</button>
+    <p class="hint">Bollette, rate, assicurazioni, abbonamenti. Dallo stesso modulo crei anche budget e risparmi.</p></section>
+  <section class="card" aria-label="Uscite previste al mese">
+    <div class="totrow"><span>Spese fisse</span><b>${EU(c.qS)}</b></div>
+    <div class="totrow"><span>Budget</span><b>${EU(bPlan)}</b></div>
+    <div class="totrow"><span>Risparmi e PAC</span><b>${EU(c.qR)}</b></div>
+    <div class="totrow big"><span>Totale uscite previste al mese</span><b>${EU(c.qS+bPlan+c.qR)}</b></div>
+  </section>
+  <section class="card" aria-label="Fondo scadenze">
     <p class="pmuted">Le spese annuali, trimestrali e le bollette sono già divise per mese: quando arrivano, i soldi ci sono.</p>
     <span class="pill ${fondo>=-0.005?"ok":"warn"}">${ico(fondo>=-0.005?"check":"alert")}${fondo>=-0.005?`Fondo scadenze coperto: ${EU(fondo)}`:`Fondo scadenze sotto di ${EU(-fondo)}`}</span>
   </section>
@@ -769,6 +803,24 @@ function sheet(title,body,onMount,primary){
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){host.innerHTML="";document.body.classList.remove("locked")}});
 
+function openPicker(){
+  const now=curPeriod(),fs=Math.min(firstStart(),...state.moves.map(x=>mIdx(periodOf(x.date))),...Object.keys(state.paid).map(mIdx),mIdx(now));
+  const from=Math.max(fs,mIdx(now)-36),to=mIdx(now)+12,years={};
+  for(let i=from;i<=to;i++){const m=mStr(i);(years[m.slice(0,4)]=years[m.slice(0,4)]||[]).push(m)}
+  const row=m=>{const c=monthCalc(m),over=c.budgets.some(b=>b.spent>b.avail+0.005),fut=mIdx(m)>mIdx(now);
+    const st=c.libero<-0.005?`<span class="bad">${ico("alert")}in negativo</span>`:over?`<span class="warn">${ico("alert")}budget sforato</span>`:`<span>${fut?"previsto":m===now?"finora":"libero"}</span>`;
+    return `<li><button type="button" class="pickbtn" data-pick="${m}" ${m===cur?'aria-current="true"':""} aria-label="${mNome(m)}${state.periodOn?", "+periodShort(m):""}: libero ${EU(c.libero)}${c.libero<-0.005?", in negativo":over?", budget sforato":""}${m===now?", periodo in corso":""}">
+      <span class="pk-txt"><span class="pk-name">${MESI[mIdx(m)%12]}${m===now?" · in corso":""}</span>${state.periodOn?`<span class="pk-sub">${periodShort(m)}</span>`:""}</span>
+      <span class="pk-amt"><b class="${c.libero<-0.005?"neg":""}">${EU(c.libero)}</b>${st}</span></button></li>`};
+  sheet(state.periodOn?"Scegli il periodo":"Scegli il mese",`
+   <button type="button" class="btn primary" id="pkToday" style="width:100%">Torna a oggi</button>
+   ${Object.keys(years).map(y=>`<section style="margin-top:0"><h2 class="h2">${y}</h2><ul class="pick">${years[y].map(row).join("")}</ul></section>`).join("")}`,close=>{
+    const go=m=>{cur=m;if(m===curPeriod())autoCur=m;close();render();window.scrollTo(0,0)};
+    document.getElementById("pkToday").onclick=()=>go(curPeriod());
+    document.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>go(b.dataset.pick));
+    const el=document.querySelector(`[data-pick="${cur}"]`);if(el)el.scrollIntoView({block:"center"});
+  });
+}
 function openPaid(m){
   const ex=state.paid[m],td=isoToday();
   const def=ex?ex.date:(td.slice(0,7)===m?td:arrival(m));
@@ -927,6 +979,7 @@ document.getElementById("prevM").onclick=()=>{cur=mAdd(cur,-1);render()};
 document.getElementById("nextM").onclick=()=>{cur=mAdd(cur,1);render()};
 document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render();window.scrollTo(0,0)});
 document.getElementById("addSpesa").onclick=()=>openMove(null);
+document.getElementById("pnBtn").onclick=()=>openPicker();
 let sx0=null,sy0=null;
 view.addEventListener("touchstart",e=>{if(e.target.closest(".cal,.filters")){sx0=null;return}sx0=e.touches[0].clientX;sy0=e.touches[0].clientY},{passive:true});
 view.addEventListener("touchend",e=>{if(sx0===null)return;const dx=e.changedTouches[0].clientX-sx0,dy=e.changedTouches[0].clientY-sy0;sx0=null;
