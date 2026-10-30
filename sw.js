@@ -1,7 +1,7 @@
 // Quote Fisse: funziona anche senza rete.
 // Con la rete prende sempre la versione più recente della pagina; senza rete usa quella salvata.
 // Quando pubblichi una nuova versione, cambia il numero qui sotto.
-const CACHE = "quote-fisse-v4";
+const CACHE = "quote-fisse-v5";
 const FILES = ["./", "./index.html", "./manifest.json", "./icons/apple-touch-icon.png", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", e => {
