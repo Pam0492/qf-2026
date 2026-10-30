@@ -1,7 +1,7 @@
 // Il Mio Mese: funziona anche senza rete.
 // Con la rete prende sempre la versione più recente della pagina; senza rete usa quella salvata.
 // Quando pubblichi una nuova versione, cambia il numero qui sotto.
-const CACHE = "il-mio-mese-v7";
+const CACHE = "il-mio-mese-v8";
 const FILES = ["./", "./index.html", "./manifest.json", "./icons/apple-touch-icon.png", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", e => {
@@ -12,6 +12,14 @@ self.addEventListener("activate", e => {
 });
 self.addEventListener("fetch", e => {
   const req = e.request;
+  const host = new URL(req.url).hostname;
+  // Caratteri dell'app (Google Fonts): salvati la prima volta, poi usati anche offline
+  if (req.method === "GET" && (host === "fonts.googleapis.com" || host === "fonts.gstatic.com")) {
+    e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
+      const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); return res;
+    })));
+    return;
+  }
   if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
   const isPage = req.mode === "navigate" || req.destination === "document";
   if (isPage) {
