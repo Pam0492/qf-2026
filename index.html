@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Quote Fisse</title>
+<title>Il Mio Mese</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Quote Fisse">
+<meta name="apple-mobile-web-app-title" content="Il Mio Mese">
 <meta name="format-detection" content="telephone=no">
 <meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
@@ -20,7 +20,7 @@
 :root{
   --bg:#F2F2F7; --surface:#FFFFFF; --sunk:#E9E9EF; --ink:#000000; --muted:#6C6C70; --line:#C6C6C8;
   --accent:#1E7A62; --accent-ink:#FFFFFF; --save:#5856D6; --charge:#C26A00; --neg:#D70015;
-  --bar:rgb(249 249 249 / .86); --press:#D1D1D6;
+  --bar:rgb(249 249 249 / .86); --press:#D1D1D6; --budget:#0A84FF;
   --f-display:-apple-system, "SF Pro Display", system-ui, sans-serif;
   --f-body:-apple-system, "SF Pro Text", system-ui, sans-serif;
   --f-num:-apple-system, "SF Pro Text", system-ui, sans-serif;
@@ -28,11 +28,11 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#000000; --surface:#1C1C1E; --sunk:#2C2C2E; --ink:#FFFFFF; --muted:#AEAEB2; --line:#48484A;
   --accent:#3CC79E; --accent-ink:#00140E; --save:#7D7AFF; --charge:#FFA53A; --neg:#FF6961;
-  --bar:rgb(22 22 24 / .86); --press:#3A3A3C; color-scheme:dark}}
+  --bar:rgb(22 22 24 / .86); --press:#3A3A3C; --budget:#409CFF; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#000000; --surface:#1C1C1E; --sunk:#2C2C2E; --ink:#FFFFFF; --muted:#AEAEB2; --line:#48484A;
   --accent:#3CC79E; --accent-ink:#00140E; --save:#7D7AFF; --charge:#FFA53A; --neg:#FF6961;
-  --bar:rgb(22 22 24 / .86); --press:#3A3A3C; color-scheme:dark}
+  --bar:rgb(22 22 24 / .86); --press:#3A3A3C; --budget:#409CFF; color-scheme:dark}
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -75,6 +75,18 @@ section{margin-top:26px;display:flex;flex-direction:column;gap:7px}
 
 .split{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--sunk);margin-top:6px}
 .split i{display:block;height:100%}
+.bar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--sunk);overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.bar i.over{background:var(--neg)}
+.choices{display:flex;flex-wrap:wrap;gap:8px}
+.choices button{border:0;background:var(--surface);min-height:40px;padding:0 14px;border-radius:20px;font-size:15px;font-weight:500;color:var(--ink);cursor:pointer}
+.choices button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.field input.bigamt{font-size:34px;font-weight:600;min-height:48px;font-variant-numeric:tabular-nums}
+.seg.three{grid-template-columns:repeat(3,1fr)}
+.stat{display:flex;gap:12px;flex-wrap:wrap;align-items:baseline;color:var(--muted);font-size:15px}
+.stat b{color:var(--ink);font-size:17px}
+.daylabel{text-transform:none}
+.chip.bud{color:var(--accent)}
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend span::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c)}
@@ -125,7 +137,7 @@ section{margin-top:26px;display:flex;flex-direction:column;gap:7px}
 .cal .dot{color:var(--line)}
 
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
-nav.tabs .in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+nav.tabs .in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
 nav.tabs button{border:0;background:none;min-height:50px;padding:6px 2px 4px;cursor:pointer;color:var(--muted);font-size:10px;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:2px}
 nav.tabs button svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 nav.tabs button[aria-current="true"]{color:var(--accent)}
@@ -172,7 +184,7 @@ nav.tabs button[aria-current="true"]{color:var(--accent)}
 .cal td.est{font-style:italic;color:var(--muted)}
 .err{font-size:14px;color:var(--neg);padding-inline:16px}
 .err:empty{display:none}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(130px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:15px;font-weight:500;white-space:nowrap}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:15px;font-weight:500;white-space:nowrap}
 @media (hover:hover){.row.click:hover,.mswitch button:hover{background:var(--sunk)}}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .28s cubic-bezier(.2,.8,.2,1)}@keyframes up{from{transform:translateY(100%)}}.sheet-bg{animation:fade .2s}@keyframes fade{from{background:transparent}}}
 </style>
@@ -182,7 +194,7 @@ nav.tabs button[aria-current="true"]{color:var(--accent)}
 
 <div class="wrap">
   <header class="top">
-    <div class="brand">Quote Fisse<small id="syncState">Salvato su questo iPhone, funziona offline</small></div>
+    <div class="brand">Il Mio Mese<small id="syncState">Salvato su questo iPhone, funziona offline</small></div>
     <div class="mswitch" id="mswitch" role="group" aria-label="Mese">
       <button id="prevM" aria-label="Mese precedente">‹</button>
       <span id="mLabel"></span>
@@ -194,6 +206,7 @@ nav.tabs button[aria-current="true"]{color:var(--accent)}
 </div>
 <nav class="tabs"><div class="in">
   <button data-tab="mese"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M21 19H3"/></svg>Mese</button>
+  <button data-tab="spese"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Spese</button>
   <button data-tab="voci"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>Voci</button>
   <button data-tab="calendario"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendario</button>
   <button data-tab="impostazioni"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2.5"/><path d="M3 10.5h18M7 6l9-3 1.2 3M15.5 15.5h2"/></svg>Stipendio</button>
@@ -210,8 +223,8 @@ const mAdd=(m,n)=>mStr(mIdx(m)+n);
 const mNome=m=>`${MESI[mIdx(m)%12]} ${Math.floor(mIdx(m)/12)}`;
 const today=new Date();const OGGI=mStr(today.getFullYear()*12+today.getMonth());
 
-const VERSIONE="1.5 · 30 ottobre 2026";
-const CADENZE={1:"Mensile",2:"Bimestrale",3:"Trimestrale",6:"Semestrale",12:"Annuale"};
+const VERSIONE="2.0 · 30 ottobre 2026";
+const CADENZE={1:"Mensile",2:"Bimestrale",3:"Trimestrale",6:"Semestrale",12:"Annuale",24:"Biennale"};
 const CATEGORIE=["Casa","Utenze","Assicurazioni","Trasporti","Abbonamenti","Salute","Tasse","Famiglia","Altro"];
 const eur=new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR"});
 const EU=v=>{const n=Math.round((+v||0)*100)/100;let[i,d]=Math.abs(n).toFixed(2).split(".");i=i.replace(/\B(?=(\d{3})+(?!\d))/g,".");return(n<0?"−":"")+i+","+d+" €"};
@@ -221,7 +234,8 @@ const parseNum=s=>{s=String(s).trim().replace(/\s|€/g,"");if(s.includes(",")){
 
 /* ===== Modello =====
  state.salary: [{from:"YYYY-MM", amount}]
- state.items:  [{id,name,kind:"spesa"|"risparmio",category,endedAt:null|"YYYY-MM",
+ state.moves:  [{id,date:"YYYY-MM-DD",amount,note,budgetId}]  spese reali registrate una per una
+ state.items:  [{id,name,kind:"spesa"|"budget"|"risparmio",category,endedAt:null|"YYYY-MM",carry,rates,
                  versions:[{from, amount, cadence, anchor}]}]
  Ogni modifica crea una versione valida "dal mese X": i mesi precedenti restano invariati. */
 function esempio(){
@@ -235,10 +249,21 @@ function esempio(){
     {id:uid(),name:"Palestra",kind:"spesa",category:"Salute",endedAt:null,versions:[{from:mAdd(s,-6),amount:240,cadence:6,anchor:`${y}-01`}]},
     {id:uid(),name:"Internet casa",kind:"spesa",category:"Utenze",endedAt:null,versions:[{from:mAdd(s,-6),amount:27.9,cadence:1,anchor:mAdd(s,-6)}]},
     {id:uid(),name:"PAC ETF azionario",kind:"risparmio",category:"Investimenti",endedAt:null,versions:[{from:mAdd(s,-6),amount:200,cadence:1,anchor:mAdd(s,-6)}]},
-    {id:uid(),name:"Fondo pensione",kind:"risparmio",category:"Investimenti",endedAt:null,versions:[{from:mAdd(s,-6),amount:100,cadence:1,anchor:mAdd(s,-6)}]}
+    {id:uid(),name:"Fondo pensione",kind:"risparmio",category:"Investimenti",endedAt:null,versions:[{from:mAdd(s,-6),amount:100,cadence:1,anchor:mAdd(s,-6)}]},
+    {id:"bx",name:"Extra e imprevisti",kind:"budget",category:"Altro",endedAt:null,carry:false,versions:[{from:mAdd(s,-6),amount:200,cadence:1,anchor:mAdd(s,-6)}]},
+    {id:"bs",name:"Spesa alimentare",kind:"budget",category:"Casa",endedAt:null,carry:false,versions:[{from:mAdd(s,-6),amount:250,cadence:1,anchor:mAdd(s,-6)}]},
+    {id:"be",name:"Epilazione",kind:"budget",category:"Salute",endedAt:null,carry:true,versions:[{from:mAdd(s,-6),amount:40,cadence:1,anchor:mAdd(s,-6)}]}
+  ],moves:[
+    {id:uid(),date:`${s}-02`,amount:46.3,note:"Supermercato",budgetId:"bs"},
+    {id:uid(),date:`${s}-05`,amount:38,note:"Cena fuori",budgetId:"bx"},
+    {id:uid(),date:`${s}-12`,amount:1.2,note:"Caffè",budgetId:"bx"},
+    {id:uid(),date:`${s}-14`,amount:55,note:"Seduta laser",budgetId:"be"},
+    {id:uid(),date:`${s}-20`,amount:62.15,note:"Supermercato",budgetId:"bs"},
+    {id:uid(),date:`${s}-25`,amount:12.9,note:"Farmacia",budgetId:""}
   ]};
 }
 let state=null;
+const norm=st=>{st.salary=st.salary||[];st.items=st.items||[];st.moves=st.moves||[];return st};
 
 const salaryAt=m=>{let r=null;for(const s of state.salary){if(mIdx(s.from)<=mIdx(m)&&(!r||mIdx(s.from)>=mIdx(r.from)))r=s}return r?r.amount:0};
 function versionAt(it,m){
@@ -275,14 +300,35 @@ function calcItem(it,v,m){
 }
 const quota=(it,v,m=cur)=>calcItem(it,v,m).q;
 const charged=(it,v,m)=>calcItem(it,v,m).c;
+/* Budget: importo messo a disposizione ogni mese per spese variabili (extra, spesa, benzina…).
+   Le spese registrate lo consumano. Se "accumula" è attivo, il non speso passa al mese dopo (salvadanaio).
+   Nel libero conta il budget del mese, più l'eventuale sforamento oltre quanto disponibile. */
+const movesOf=m=>state.moves.filter(x=>x.date.slice(0,7)===m);
+function budgetMonth(it,m){
+  const start=Math.min(...it.versions.map(v=>mIdx(v.from))),k=mIdx(m);let carry=0;
+  for(let i=start;i<=k;i++){
+    const mm=mStr(i),v=versionAt(it,mm),amt=v?v.amount:0;
+    const spent=state.moves.filter(x=>x.budgetId===it.id&&x.date.slice(0,7)===mm).reduce((a,x)=>a+x.amount,0);
+    const carryIn=it.carry?carry:0,avail=amt+carryIn;
+    if(i===k)return{amt,carryIn,avail,spent,left:avail-spent,deduct:amt+Math.max(0,spent-avail)};
+    carry=Math.max(0,avail-spent);
+  }
+  return{amt:0,carryIn:0,avail:0,spent:0,left:0,deduct:0};
+}
 function monthCalc(m){
-  const rows=[];
-  for(const it of state.items){const v=versionAt(it,m);if(!v)continue;const x=calcItem(it,v,m);rows.push({it,v,q:x.q,real:x.c,qEst:!!x.qEst,cEst:!!x.cEst})}
+  const rows=[],budgets=[];
+  for(const it of state.items){const v=versionAt(it,m);if(!v)continue;
+    if(it.kind==="budget"){budgets.push({it,v,...budgetMonth(it,m)});continue}
+    const x=calcItem(it,v,m);rows.push({it,v,q:x.q,real:x.c,qEst:!!x.qEst,cEst:!!x.cEst})}
   const stip=salaryAt(m);
   const spese=rows.filter(r=>r.it.kind==="spesa"), ris=rows.filter(r=>r.it.kind==="risparmio");
   const qS=spese.reduce((a,r)=>a+r.q,0), qR=ris.reduce((a,r)=>a+r.q,0);
   const realS=spese.reduce((a,r)=>a+r.real,0);
-  return {m,stip,spese,ris,qS,qR,realS,libero:stip-qS-qR};
+  const mv=movesOf(m),bIds=new Set(budgets.map(b=>b.it.id));
+  const fuoriList=mv.filter(x=>!bIds.has(x.budgetId)),fuori=fuoriList.reduce((a,x)=>a+x.amount,0);
+  const speso=mv.reduce((a,x)=>a+x.amount,0);
+  const qB=budgets.reduce((a,b)=>a+b.deduct,0)+fuori;
+  return {m,stip,spese,ris,budgets,mv,fuori,speso,qS,qR,qB,realS,libero:stip-qS-qR-qB};
 }
 
 /* ===== Persistenza: archivio privato del proprio account, con copia locale ===== */
@@ -305,19 +351,23 @@ function render(){
   document.getElementById("mLabel").textContent=mNome(cur);
   document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-current",b.dataset.tab===tab));
   document.getElementById("banner").innerHTML=state.sample?`<div class="banner"><span><b>Dati di esempio.</b> Modificali o parti da zero: appena salvi una voce diventano tuoi.</span><button class="btn sm plain" id="reset">Parti da zero</button></div>`:"";
-  const r=document.getElementById("reset");if(r)r.onclick=()=>{state={sample:false,salary:[],items:[]};persist();render();openSalary()};
+  const r=document.getElementById("reset");if(r)r.onclick=()=>{state={sample:false,salary:[],items:[],moves:[]};persist();render();openSalary()};
   document.getElementById("mswitch").classList.toggle("off",tab==="impostazioni");
-  view.innerHTML=`<div class="titlebar"><h1 class="largetitle">${({mese:"Riepilogo",voci:"Voci",calendario:"Calendario "+cur.slice(0,4),impostazioni:"Stipendio"})[tab]}</h1>${tab==="mese"||tab==="voci"?`<button class="addbtn" id="addB" aria-label="Aggiungi una voce">+ Aggiungi</button>`:""}</div>`+({mese:vMese,voci:vVoci,calendario:vCal,impostazioni:vImp})[tab]();
+  const addLab=tab==="voci"?"+ Voce":tab==="mese"||tab==="spese"?"+ Spesa":"";
+  view.innerHTML=`<div class="titlebar"><h1 class="largetitle">${({mese:"Riepilogo",spese:"Spese",voci:"Voci",calendario:"Calendario "+cur.slice(0,4),impostazioni:"Stipendio"})[tab]}</h1>${addLab?`<button class="addbtn" id="addB">${addLab}</button>`:""}</div>`+({mese:vMese,spese:vSpese,voci:vVoci,calendario:vCal,impostazioni:vImp})[tab]();
   view.querySelectorAll("[data-edit]").forEach(e=>e.onclick=()=>openItem(e.dataset.edit));
   view.querySelectorAll("[data-bill]").forEach(e=>e.onclick=()=>openBill(e.dataset.bill,cur));
-  const ab=document.getElementById("addB");if(ab)ab.onclick=()=>openItem(null);
+  const ab=document.getElementById("addB");if(ab)ab.onclick=()=>tab==="voci"?openItem(null):openMove(null);
+  view.querySelectorAll("[data-move]").forEach(e=>e.onclick=()=>openMove(e.dataset.move));
+  view.querySelectorAll("[data-addto]").forEach(e=>e.onclick=()=>openMove(null,e.dataset.addto));
+  view.querySelectorAll("[data-tabgo]").forEach(e=>e.onclick=()=>{tab=e.dataset.tabgo;render();window.scrollTo(0,0)});
   bindTab?.();
 }
 let bindTab=null;
 
 function vMese(){
-  const c=monthCalc(cur);bindTab=()=>{document.getElementById("editSal").onclick=openSalary};
-  const tot=Math.max(c.stip,c.qS+c.qR,1);
+  const c=monthCalc(cur);bindTab=()=>{document.getElementById("editSal").onclick=()=>openSalary()};
+  const tot=Math.max(c.stip,c.qS+c.qR+c.qB,1);
   const pct=v=>Math.max(0,v/tot*100).toFixed(2)+"%";
   const reali=c.spese.filter(r=>r.real>0).sort((a,b)=>b.real-a.real);
   const diff=c.realS-c.qS;
@@ -325,20 +375,24 @@ function vMese(){
   const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
   return `
   <section class="hero">
-    <div class="label">Libero dopo spese e risparmi</div>
+    <div class="label">Libero a fine ${MESI[mIdx(cur)%12]}</div>
     <div class="big num ${c.libero<0?"neg":""}">${EU(c.libero)}</div>
-    <p>Stipendio di ${mNome(cur)} meno quote mensili delle spese fisse e versamenti di risparmio.</p>
+    <p>Quello che ti resta dopo spese fisse, risparmi, budget e spese registrate. Se sfori un budget, scende.</p>
+    <div class="stat"><span>Speso finora</span><b class="num">${EU(c.speso)}</b><span>in ${c.mv.length} ${c.mv.length===1?"spesa":"spese"}</span></div>
   </section>
   <section>
-    <div class="split" aria-hidden="true"><i style="width:${pct(c.qS)};background:var(--charge)"></i><i style="width:${pct(c.qR)};background:var(--save)"></i><i style="width:${pct(c.libero)};background:var(--accent)"></i></div>
-    <div class="legend"><span style="--c:var(--charge)">Spese fisse</span><span style="--c:var(--save)">Risparmi e PAC</span><span style="--c:var(--accent)">Libero</span></div>
+    <div class="split" aria-hidden="true"><i style="width:${pct(c.qS)};background:var(--charge)"></i><i style="width:${pct(c.qR)};background:var(--save)"></i><i style="width:${pct(c.qB)};background:var(--budget)"></i><i style="width:${pct(c.libero)};background:var(--accent)"></i></div>
+    <div class="legend"><span style="--c:var(--charge)">Spese fisse</span><span style="--c:var(--save)">Risparmi</span><span style="--c:var(--budget)">Budget e spese</span><span style="--c:var(--accent)">Libero</span></div>
     <div class="ledger">
       <div class="row click" id="editSal"><span class="t">Stipendio netto</span><span class="amt num">${EU(c.stip)}</span></div>
       <div class="row"><span class="t">Quote spese fisse</span><span class="amt num minus">− ${EU(c.qS)}</span><span class="sub">${c.spese.length} voci, le non mensili ripartite sui mesi della loro cadenza${c.spese.some(r=>r.qEst)?`. Bollette stimate: ${c.spese.filter(r=>r.qEst).map(r=>esc(r.it.name)).join(", ")}`:""}</span></div>
       <div class="row"><span class="t">Risparmi e PAC</span><span class="amt num minus">− ${EU(c.qR)}</span><span class="sub">Escono dal conto ma restano tuoi</span></div>
-      <div class="row total"><span class="t">Libero</span><span class="amt num">${EU(c.libero)}</span></div>
+      <div class="row"><span class="t">Budget e spese variabili</span><span class="amt num minus">− ${EU(c.qB)}</span><span class="sub">${c.budgets.length?`Budget del mese${c.budgets.some(b=>b.spent>b.avail+0.005)?" più gli sforamenti":""}`:"Nessun budget impostato"}${c.fuori?` · ${EU(c.fuori)} di spese fuori budget`:""}</span></div>
+      <div class="row total"><span class="t">Libero</span><span class="amt num ${c.libero<0?"neg":""}">${EU(c.libero)}</span></div>
     </div>
   </section>
+  ${budgetBlock(c)}
+  ${recentBlock(c)}
   <section>
     <div class="label">Addebiti reali a ${MESI[mIdx(cur)%12]}</div>
     <div class="ledger">
@@ -351,12 +405,80 @@ function vMese(){
   `;
 }
 
+function budgetRow(b,clickAttr){
+  const pct=b.avail>0?Math.min(100,b.spent/b.avail*100):(b.spent>0?100:0),over=b.spent>b.avail+0.005;
+  return `<div class="row click" ${clickAttr}><span class="t">${esc(b.it.name)}${b.it.carry?`<span class="chip bud">salvadanaio</span>`:""}</span><span class="amt num ${over?"neg":""}">${over?"sforato "+EU(b.spent-b.avail):"restano "+EU(b.left)}</span>
+   <span class="bar"><i class="${over?"over":""}" style="width:${pct.toFixed(1)}%"></i></span>
+   <span class="sub">Spesi ${EU(b.spent)} di ${EU(b.avail)}${b.carryIn>0.005?` (${EU(b.amt)} del mese + ${EU(b.carryIn)} messi da parte prima)`:""}</span></div>`;
+}
+function budgetBlock(c){
+  if(!c.budgets.length&&!c.fuori)return `<section><div class="label">Budget</div><div class="ledger"><div class="empty">Crea un budget per extra, spesa, benzina… In Voci tocca + Voce e scegli Budget.</div></div></section>`;
+  return `<section><div class="label">Budget di ${MESI[mIdx(cur)%12]}</div><div class="ledger">
+   ${c.budgets.map(b=>budgetRow(b,`data-addto="${b.it.id}"`)).join("")}
+   ${c.fuori?`<div class="row click" data-tabgo="spese"><span class="t">Fuori budget</span><span class="amt num">${EU(c.fuori)}</span><span class="sub">Spese registrate senza un budget</span></div>`:""}
+  </div></section>`;
+}
+const dayName=d=>{const t=new Date(+d.slice(0,4),+d.slice(5,7)-1,+d.slice(8,10)).toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"});return t.charAt(0).toUpperCase()+t.slice(1)};
+const budName=id=>{const b=state.items.find(i=>i.id===id&&i.kind==="budget");return b?b.name:""};
+function moveRow(x){const bn=budName(x.budgetId);
+  return `<div class="row click" data-move="${x.id}"><span class="t">${esc(x.note||bn||"Spesa")}</span><span class="amt num">${EU(x.amount)}</span><span class="sub">${bn?esc(bn):"Fuori budget"}</span></div>`}
+function recentBlock(c){
+  const last=[...c.mv].sort((a,b)=>b.date.localeCompare(a.date)||0).slice(0,4);
+  return `<section><div class="label">Ultime spese</div><div class="ledger">${last.length?last.map(moveRow).join(""):`<div class="empty">Nessuna spesa registrata a ${MESI[mIdx(cur)%12]}. Tocca + Spesa, anche per un caffè.</div>`}
+   ${c.mv.length>4?`<div class="row click" data-tabgo="spese"><span class="t" style="color:var(--accent)">Vedi tutte le ${c.mv.length} spese</span></div>`:""}</div></section>`;
+}
+function vSpese(){
+  bindTab=null;
+  const c=monthCalc(cur),days={};
+  [...c.mv].sort((a,b)=>b.date.localeCompare(a.date)).forEach(x=>(days[x.date]=days[x.date]||[]).push(x));
+  const ks=Object.keys(days);
+  return `<section><div class="ledger">
+    <div class="row total"><span class="t">Speso a ${MESI[mIdx(cur)%12]}</span><span class="amt num">${EU(c.speso)}</span><span class="sub">${c.mv.length} ${c.mv.length===1?"spesa registrata":"spese registrate"}${c.fuori?` · ${EU(c.fuori)} fuori budget`:""}</span></div>
+   </div></section>
+   ${c.budgets.length?`<section><div class="label">Budget</div><div class="ledger">${c.budgets.map(b=>budgetRow(b,`data-addto="${b.it.id}"`)).join("")}</div></section>`:""}
+   ${ks.length?ks.map(d=>`<section><div class="label"><span class="daylabel">${dayName(d)}</span></div><div class="ledger">${days[d].map(moveRow).join("")}</div></section>`).join(""):`<section><div class="ledger"><div class="empty">Nessuna spesa registrata. Tocca + Spesa per aggiungerne una, anche un caffè.</div></div></section>`}`;
+}
+function openMove(id,preBudget){
+  const x=id?state.moves.find(m=>m.id===id):null;
+  const now=new Date(),todayISO=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+  const dDef=x?x.date:(cur===OGGI?todayISO:`${cur}-01`);
+  let bud=x?x.budgetId:(preBudget??state.lastBudget??"");
+  const notes=[...new Set([...state.moves].reverse().map(m=>m.note).filter(Boolean))].slice(0,30);
+  sheet(x?"Modifica spesa":"Nuova spesa",`
+   <div class="group"><div class="field"><label for="mvAmt">Importo (€)</label><input id="mvAmt" class="bigamt" inputmode="decimal" enterkeyhint="next" autocomplete="off" placeholder="0,00" value="${x?String(x.amount).replace(".",","):""}"></div>
+    <div class="field"><label for="mvNote">Descrizione</label><input id="mvNote" list="mvList" value="${esc(x?.note||"")}" placeholder="Es. Caffè, cena fuori, benzina" autocapitalize="sentences" autocomplete="off" enterkeyhint="done"><datalist id="mvList">${notes.map(n=>`<option value="${esc(n)}"></option>`).join("")}</datalist></div>
+    <div class="field"><label for="mvDate">Giorno</label><input id="mvDate" type="date" value="${dDef}"></div></div>
+   <div class="label">Da quale budget</div>
+   <div class="choices" id="mvB"></div>
+   <div id="mvErr" class="err"></div>
+   <div class="actions"><button class="btn primary" id="mvOk">${x?"Salva spesa":"Registra spesa"}</button>${x?`<button class="btn danger" id="mvDel">Elimina spesa</button>`:""}</div><div id="mvConf"></div>`,close=>{
+    const $=i=>document.getElementById(i);
+    const drawB=()=>{const m=($("mvDate").value||dDef).slice(0,7);
+      const bs=state.items.filter(i=>i.kind==="budget"&&versionAt(i,m));
+      if(bud&&!bs.some(b=>b.id===bud))bud="";
+      $("mvB").innerHTML=bs.map(b=>`<button type="button" data-b="${b.id}" aria-pressed="${b.id===bud}">${esc(b.name)}</button>`).join("")+`<button type="button" data-b="" aria-pressed="${!bud}">Fuori budget</button>`;
+      $("mvB").querySelectorAll("button").forEach(e=>e.onclick=()=>{bud=e.dataset.b;drawB()})};
+    drawB();$("mvDate").onchange=drawB;
+    $("mvOk").onclick=()=>{const a=parseNum($("mvAmt").value),d=$("mvDate").value;
+      if(!(a>0)){$("mvErr").textContent="Scrivi quanto hai speso, ad esempio 1,20.";return}
+      if(!d){$("mvErr").textContent="Scegli il giorno della spesa.";return}
+      const rec={date:d,amount:a,note:$("mvNote").value.trim(),budgetId:bud};
+      if(x)Object.assign(x,rec);else state.moves.push({id:uid(),...rec});
+      state.lastBudget=bud;cur=d.slice(0,7);close();commit(x?"Spesa aggiornata":"Spesa registrata")};
+    if(x)$("mvDel").onclick=()=>{$("mvConf").innerHTML=`<div class="confirm"><span>Eliminare questa spesa di ${EU(x.amount)}?</span><div class="actions"><button class="btn danger" id="mvDel2">Elimina</button><button class="btn" id="mvNo">Annulla</button></div></div>`;
+      $("mvDel2").onclick=()=>{state.moves=state.moves.filter(m=>m!==x);close();commit("Spesa eliminata")};$("mvNo").onclick=()=>$("mvConf").innerHTML="";$("mvConf").scrollIntoView({behavior:"smooth",block:"end"})};
+    if(!x)$("mvAmt").focus();
+  },"mvOk");
+}
+
 function itemRow(it){
   const v=versionAt(it,cur)||it.versions[it.versions.length-1];
   const off=!versionAt(it,cur);
+  if(it.kind==="budget"){const b=budgetMonth(it,cur);return `<div class="row click item" data-edit="${it.id}"><span class="t">${esc(it.name)}<span class="chip bud">${it.carry?"salvadanaio":"budget"}</span>${off?`<span class="chip off">sospeso</span>`:""}</span><span class="amt num">${EU(v.amount)}<small>al mese</small></span><span class="sub">${esc(it.category)} · spesi ${EU(b.spent)} a ${MESI[mIdx(cur)%12]}${b.carryIn>0.005?` · ${EU(b.carryIn)} messi da parte`:""}</span></div>`}
   const lastB=it.variable?Object.keys(it.bills||{}).sort((a,b)=>mIdx(b)-mIdx(a))[0]:null;
   if(it.variable&&it.kind==="spesa"){const x=calcItem(it,v,cur);return `<div class="row click item" data-edit="${it.id}"><span class="t">${esc(it.name)}<span class="chip charge">variabile</span>${off?`<span class="chip off">sospesa</span>`:""}</span><span class="amt num">${x.qEst?"~ ":""}${EU(x.q)}<small>${x.qEst?"stima al mese":"al mese"}</small></span><span class="sub">${esc(it.category)} · bolletta ${CADENZE[v.cadence].toLowerCase()} · ${lastB?`ultima ${EU(it.bills[lastB])} a ${MESI[mIdx(lastB)%12]}`:"nessuna bolletta registrata"}</span></div>`}
-  const desc=it.kind==="risparmio"?`${EU(v.amount)} ogni mese`:v.cadence===1?`${EU(v.amount)} ogni mese`:`${EU(v.amount)} ${CADENZE[v.cadence].toLowerCase()} · prossimo addebito ${nextCharge(it,v)}`;
+  let desc=it.kind==="risparmio"?`${EU(v.amount)} ogni mese`:v.cadence===1?`${EU(v.amount)} ogni mese`:`${EU(v.amount)} ${CADENZE[v.cadence].toLowerCase()} · prossimo addebito ${nextCharge(it,v)}`;
+  if(it.rates){const n=Math.floor((mIdx(cur)-mIdx(v.anchor))/v.cadence)+1;desc+=n>=1&&n<=it.rates?` · rata ${n} di ${it.rates}`:n<1?` · ${it.rates} rate da ${mNome(v.anchor)}`:` · rate finite`}
   return `<div class="row click item" data-edit="${it.id}"><span class="t">${esc(it.name)}${it.kind==="risparmio"?`<span class="chip save">risparmio</span>`:""}${off?`<span class="chip off">${it.endedAt&&mIdx(cur)>=mIdx(it.endedAt)?"sospesa":"non ancora attiva"}</span>`:""}</span><span class="amt num">${EU(quota(it,v))}<small>al mese</small></span><span class="sub">${esc(it.category)} · ${desc}</span></div>`;
 }
 function nextCharge(it,v){for(let i=0;i<v.cadence;i++){const m=mAdd(cur,i);if(charged(it,v,m))return MBREVI[mIdx(m)%12]+" "+m.slice(0,4)}return "—"}
@@ -364,9 +486,9 @@ function vVoci(){
   bindTab=null;
   const act=state.items.filter(i=>versionAt(i,cur)), off=state.items.filter(i=>!versionAt(i,cur));
   const sp=act.filter(i=>i.kind==="spesa").sort((a,b)=>quota(b,versionAt(b,cur))-quota(a,versionAt(a,cur)));
-  const ri=act.filter(i=>i.kind==="risparmio");
-  const blk=(t,l)=>`<section><div class="label">${t}</div><div class="ledger">${l.length?l.map(itemRow).join(""):`<div class="empty">Nessuna voce. Tocca + Aggiungi per inserirne una.</div>`}</div></section>`;
-  return blk(`Spese fisse attive a ${mNome(cur)}`,sp)+blk("Risparmi e PAC",ri)+(off.length?blk("Sospese o non ancora attive",off):"");
+  const ri=act.filter(i=>i.kind==="risparmio"),bu=act.filter(i=>i.kind==="budget");
+  const blk=(t,l)=>`<section><div class="label">${t}</div><div class="ledger">${l.length?l.map(itemRow).join(""):`<div class="empty">Nessuna voce. Tocca + Voce per inserirne una.</div>`}</div></section>`;
+  return blk(`Spese fisse attive a ${mNome(cur)}`,sp)+blk("Budget per spese variabili",bu)+blk("Risparmi e PAC",ri)+(off.length?blk("Sospese o non ancora attive",off):"");
 }
 
 function vCal(){
@@ -386,10 +508,11 @@ function vCal(){
       ${!big.length&&!mens?`<div class="empty">Nessun addebito</div>`:""}
       <div class="row total"><span class="t">Totale addebitato</span><span class="amt num">${EU(c.realS)}</span></div>
       <div class="row"><span class="t">Quota accantonata</span><span class="amt num">${EU(c.qS)}</span></div>
+      <div class="row"><span class="t">Budget e spese variabili</span><span class="amt num">${EU(c.qB)}</span>${c.speso?`<span class="sub">Spese registrate: ${EU(c.speso)}</span>`:""}</div>
       <div class="row"><span class="t">Fondo scadenze</span><span class="amt num ${fondo<-0.005?"neg":""}">${EU(fondo)}</span></div>
       <div class="row click" data-goto="${m}"><span class="t">Libero del mese</span><span class="amt num ${c.libero<-0.005?"neg":""}">${EU(c.libero)}</span></div>
      </div></section>`}).join("");
-  return `<section><p class="foot">Per ogni mese: le spese non mensili e le bollette addebitate per intero, poi il totale. Le bollette non ancora arrivate sono stimate (~). Il fondo scadenze è quanto avresti da parte da gennaio: se è rosso, una scadenza arriva prima di averla accantonata.</p></section>${cards}`;
+  return `<section><p class="foot">Per ogni mese: le spese non mensili e le bollette addebitate per intero, poi il totale, i budget e quello che resta libero. Le bollette non ancora arrivate sono stimate (~). Il fondo scadenze è quanto avresti da parte da gennaio: se è rosso, una scadenza arriva prima di averla accantonata.</p></section>${cards}`;
 }
 
 function vImp(){
@@ -453,13 +576,16 @@ function openItem(id){
   let kind=it?it.kind:"spesa";
   const cats=[...CATEGORIE,"Investimenti"];
   sheet(it?"Modifica voce":"Nuova voce",`
-   <div class="seg" role="group" aria-label="Tipo"><button id="kS" type="button">Spesa fissa</button><button id="kR" type="button">Risparmio / PAC</button></div>
+   <div class="seg three" role="group" aria-label="Tipo"><button id="kS" type="button">Spesa fissa</button><button id="kB" type="button">Budget</button><button id="kR" type="button">Risparmio</button></div>
+   <p class="foot" id="kindH"></p>
+   <div class="group" id="carryG"><label class="field toggle" for="iCarry"><span>Accumula il non speso<span class="hint">Salvadanaio: quello che non usi resta per i mesi dopo. Utile per spese irregolari come l'epilazione.</span></span><input type="checkbox" class="switch" id="iCarry" ${it?.carry?"checked":""}></label></div>
    <div class="group" id="varG"><label class="field toggle" for="iVar"><span>Importo variabile<span class="hint">Per le bollette: registri ogni importo reale</span></span><input type="checkbox" class="switch" id="iVar" ${it?.variable?"checked":""}></label></div>
    <div class="group"><div class="field"><label for="iName">Nome</label><input id="iName" value="${esc(it?.name||"")}" placeholder="Es. Assicurazione casa" autocapitalize="sentences" autocomplete="off" enterkeyhint="next"></div>
     <div class="field"><label for="iAmt" id="amtLab">Importo di ogni addebito (€)</label><input id="iAmt" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="0,00" value="${v.amount!==""?String(v.amount).replace(".",","):""}"></div>
     <div class="field" id="cadF"><label for="iCad">Cadenza</label><select id="iCad">${Object.entries(CADENZE).map(([k,l])=>`<option value="${k}" ${+k===v.cadence?"selected":""}>${l}</option>`).join("")}</select></div>
     <div class="field" id="covF"><label for="iCov">Periodo coperto da ogni bolletta</label><select id="iCov"><option value="prima" ${it?.coverage!=="incluso"?"selected":""}>I mesi prima del pagamento</option><option value="incluso" ${it?.coverage==="incluso"?"selected":""}>Fino al mese del pagamento</option></select><span class="hint" id="covH"></span></div>
-    <div class="field" id="ancF"><label for="iAnc" id="ancLab">Mese di un addebito</label><input id="iAnc" type="month" value="${v.anchor}"><span class="hint">Un mese qualsiasi in cui arriva il pagamento: da qui si calcolano gli altri.</span></div>
+    <div class="field" id="ancF"><label for="iAnc" id="ancLab">Mese di un addebito</label><input id="iAnc" type="month" value="${v.anchor}"><span class="hint" id="ancH">Un mese qualsiasi in cui arriva il pagamento: da qui si calcolano gli altri.</span></div>
+    <div class="field" id="rateF"><label for="iRate">Numero di rate</label><input id="iRate" inputmode="numeric" enterkeyhint="done" autocomplete="off" placeholder="Lascia vuoto se non finisce" value="${it?.rates||""}"><span class="hint" id="rateH"></span></div>
     <div class="field"><label for="iCat">Categoria</label><select id="iCat">${cats.map(c=>`<option ${c===(it?.category||"Casa")?"selected":""}>${c}</option>`).join("")}</select></div>
    </div>
    ${it?`<section id="billS"><div class="label">Bollette registrate</div><div class="ledger">${Object.keys(it.bills||{}).sort((a,b)=>mIdx(b)-mIdx(a)).map(k=>`<div class="row click" data-bm="${k}"><span class="t" style="text-transform:capitalize">${mNome(k)}</span><span class="amt num">${EU(it.bills[k])}</span></div>`).join("")||`<div class="empty">Ancora nessuna. Registra l'ultima bolletta arrivata.</div>`}</div><button class="btn" id="iAddB">Registra una bolletta</button></section>`:`<p class="foot" id="billS">Dopo aver salvato la voce potrai registrare le bollette arrivate.</p>`}
@@ -467,16 +593,20 @@ function openItem(id){
    <div class="preview"><span id="pvLab">Quota mensile</span><b id="pv">—</b></div>
    <div id="iErr" class="err"></div>
    <div class="actions"><button class="btn primary" id="iOk">${it?"Salva modifiche":"Aggiungi voce"}</button>
-    ${it?(it.endedAt?`<button class="btn" id="iRe">Riattiva</button>`:`<button class="btn" id="iSus">Sospendi da ${mNome(cur)}</button>`)+`<button class="btn danger" id="iDel">Elimina</button>`:""}</div>
+    ${it?(it.rates?"":it.endedAt?`<button class="btn" id="iRe">Riattiva</button>`:`<button class="btn" id="iSus">${it.kind==="budget"?"Sospendi il budget":"Sospendi"} da ${mNome(cur)}</button>`)+`<button class="btn danger" id="iDel">Elimina</button>`:""}</div>
    <div id="iConf"></div>`,close=>{
     const $=i=>document.getElementById(i);
     const upd=()=>{
-      $("kS").setAttribute("aria-pressed",kind==="spesa");$("kR").setAttribute("aria-pressed",kind==="risparmio");
-      const vr=kind==="spesa"&&$("iVar").checked;
-      $("cadF").hidden=kind==="risparmio";$("ancF").hidden=kind==="risparmio";$("varG").hidden=kind==="risparmio";
-      $("covF").hidden=!vr;$("billS").hidden=!vr;
-      $("amtLab").textContent=kind==="risparmio"?"Versamento mensile (€)":vr?"Stima di una bolletta (€)":"Importo di ogni addebito (€)";
-      $("ancLab").textContent=vr?"Mese di una bolletta":"Mese di un addebito";
+      $("kS").setAttribute("aria-pressed",kind==="spesa");$("kR").setAttribute("aria-pressed",kind==="risparmio");$("kB").setAttribute("aria-pressed",kind==="budget");
+      const sp=kind==="spesa",vr=sp&&$("iVar").checked;
+      $("kindH").textContent=sp?"Una spesa che si ripete con cadenza fissa: affitto, assicurazioni, bollette, rate.":kind==="budget"?"Una cifra che metti a disposizione ogni mese per spese variabili: extra, spesa, benzina. Poi registri le spese vere e vedi quanto resta.":"Soldi che escono dal conto ma restano tuoi: PAC, fondo pensione.";
+      $("cadF").hidden=!sp;$("ancF").hidden=!sp;$("varG").hidden=!sp;$("carryG").hidden=kind!=="budget";
+      $("covF").hidden=!vr;$("billS").hidden=!vr;$("rateF").hidden=!sp||vr;
+      $("amtLab").textContent=kind==="risparmio"?"Versamento mensile (€)":kind==="budget"?"Budget mensile (€)":vr?"Stima di una bolletta (€)":"Importo di ogni addebito (€)";
+      const nR=parseInt($("iRate").value,10),rOn=sp&&!vr&&nR>0;
+      $("ancLab").textContent=vr?"Mese di una bolletta":rOn?"Mese della prima rata":"Mese di un addebito";
+      $("ancH").textContent=rOn?"Il mese in cui paghi la prima rata.":"Un mese qualsiasi in cui arriva il pagamento: da qui si calcolano gli altri.";
+      {const A=$("iAnc").value,c0=+$("iCad").value;$("rateH").textContent=rOn&&A?`Ultima rata: ${mNome(mAdd(A,(nR-1)*c0))}. Totale: ${EU((parseNum($("iAmt").value)||0)*nR)}.`:"Per finanziamenti e acquisti a rate. Lascia vuoto se la spesa non ha una fine."}
       const a=parseNum($("iAmt").value),c=+$("iCad").value;
       {const B=mIdx(OGGI),o=$("iCov").value==="incluso"?0:1,ms=[...Array(c)].map((_,i)=>MESI[(B-o-c+1+i)%12]);
        $("covH").textContent=`Esempio: la bolletta pagata a ${MESI[B%12]} si divide su ${ms.length>1?ms.slice(0,-1).join(", ")+" e "+ms.at(-1):ms[0]}.`}
@@ -484,26 +614,31 @@ function openItem(id){
       if(vr&&a>0){$("pvLab").textContent="Quota usata finché non registri bollette vere";$("pv").textContent=EU(a/c);return}
       if(!(a>0)){$("pv").textContent="—";$("pvLab").textContent="Quota mensile";return}
       if(kind==="risparmio"){$("pvLab").textContent="Esce ogni mese, conteggiato nei risparmi";$("pv").textContent=EU(a)}
+      else if(kind==="budget"){$("pvLab").textContent=$("iCarry").checked?"Ogni mese nel salvadanaio":"A disposizione ogni mese";$("pv").textContent=EU(a)}
       else{$("pvLab").textContent=c===1?"Quota mensile":`Quota mensile (${EU(a)} ÷ ${c} mesi)`;$("pv").textContent=EU(a/c)}
     };
-    $("kS").onclick=()=>{kind="spesa";upd()};$("kR").onclick=()=>{kind="risparmio";if($("iCat").value!=="Investimenti")$("iCat").value="Investimenti";upd()};
-    ["iAmt","iCad","iCov","iVar"].forEach(i=>{$(i).oninput=upd;$(i).onchange=upd});upd();
+    $("kS").onclick=()=>{kind="spesa";if($("iCat").value==="Investimenti")$("iCat").value="Casa";upd()};$("kB").onclick=()=>{kind="budget";if($("iCat").value==="Investimenti")$("iCat").value="Altro";upd()};$("kR").onclick=()=>{kind="risparmio";if($("iCat").value!=="Investimenti")$("iCat").value="Investimenti";upd()};
+    ["iAmt","iCad","iCov","iVar","iRate","iAnc","iCarry"].forEach(i=>{$(i).oninput=upd;$(i).onchange=upd});upd();
     if(it&&$("iAddB")){$("iAddB").onclick=()=>openBill(it.id,cur);document.querySelectorAll("[data-bm]").forEach(e=>e.onclick=()=>openBill(it.id,e.dataset.bm))}
     $("iOk").onclick=()=>{
       const name=$("iName").value.trim(),a=parseNum($("iAmt").value),from=$("iFrom").value;
-      const cad=kind==="risparmio"?1:+$("iCad").value,anchor=kind==="risparmio"?from:($("iAnc").value||from);
+      const sp=kind==="spesa",cad=sp?+$("iCad").value:1,anchor=sp?($("iAnc").value||from):from;
+      const nR=parseInt($("iRate").value,10),vr0=sp&&$("iVar").checked,rates=sp&&!vr0&&nR>0?nR:null;
+      if($("iRate").value.trim()&&!rates&&sp&&!vr0){$("iErr").textContent="Il numero di rate deve essere un numero intero, ad esempio 20.";return}
       if(!name){$("iErr").textContent="Dai un nome alla voce.";return}
       if(!(a>0)){$("iErr").textContent="Inserisci un importo maggiore di zero, ad esempio 120,50.";return}
       if(!from){$("iErr").textContent="Scegli il mese da cui vale.";return}
       const ver={from,amount:a,cadence:cad,anchor};
-      const vr=kind==="spesa"&&$("iVar").checked,cov=$("iCov").value;
-      if(it){it.name=name;it.kind=kind;it.category=$("iCat").value;it.variable=vr;it.coverage=cov;if(vr&&!it.bills)it.bills={};it.versions=it.versions.filter(x=>x.from!==from);it.versions.push(ver);
-        if(it.endedAt&&mIdx(it.endedAt)<=mIdx(from))it.endedAt=null}
-      else state.items.push({id:uid(),name,kind,category:$("iCat").value,endedAt:null,variable:vr,coverage:cov,bills:{},versions:[ver]});
+      const vr=vr0,cov=$("iCov").value,carry=kind==="budget"&&$("iCarry").checked;
+      let tgt=it;
+      if(it){it.name=name;it.kind=kind;it.category=$("iCat").value;it.variable=vr;it.coverage=cov;it.carry=carry;if(vr&&!it.bills)it.bills={};it.versions=it.versions.filter(x=>x.from!==from);it.versions.push(ver);
+        if(it.endedAt&&(it.rates||mIdx(it.endedAt)<=mIdx(from)))it.endedAt=null}
+      else{tgt={id:uid(),name,kind,category:$("iCat").value,endedAt:null,variable:vr,coverage:cov,carry,bills:{},versions:[ver]};state.items.push(tgt)}
+      tgt.rates=rates;if(rates)tgt.endedAt=mAdd(anchor,rates*cad);
       close();commit(it?"Modifiche salvate":"Voce aggiunta");
     };
     if(it){
-      if($("iSus"))$("iSus").onclick=()=>{it.endedAt=cur;close();commit(`Sospesa da ${mNome(cur)}`)};
+      if($("iSus"))$("iSus").onclick=()=>{it.endedAt=cur;it.rates=null;close();commit(`Sospesa da ${mNome(cur)}`)};
       if($("iRe"))$("iRe").onclick=()=>{it.endedAt=null;close();commit("Voce riattivata")};
       $("iDel").onclick=()=>{$("iConf").innerHTML=`<div class="confirm"><span>Eliminare <b>${esc(it.name)}</b> anche da tutti i mesi passati? Per smettere di contarla da ora in poi usa Sospendi.</span><div class="actions"><button class="btn danger" id="iDel2">Elimina definitivamente</button><button class="btn" id="iNo">Annulla</button></div></div>`;
         $("iDel2").onclick=()=>{state.items=state.items.filter(x=>x!==it);close();commit("Voce eliminata")};$("iNo").onclick=()=>$("iConf").innerHTML="";$("iConf").scrollIntoView({behavior:"smooth",block:"end"})};
@@ -539,8 +674,8 @@ function openBill(id,m){
 
 async function exportData(){
   const json=JSON.stringify({...state,sample:false},null,1);
-  try{const f=new File([json],`quote-fisse-${OGGI}.json`,{type:"application/json"});
-    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"Backup Quote Fisse"});return}}catch(e){if(e&&e.name==="AbortError")return}
+  try{const f=new File([json],`il-mio-mese-${OGGI}.json`,{type:"application/json"});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"Backup Il Mio Mese"});return}}catch(e){if(e&&e.name==="AbortError")return}
   sheet("Esporta dati",`<div class="group"><div class="field"><label for="exT">Copia questo testo e incollalo in Note o in un messaggio a te stessa</label><textarea id="exT" readonly>${esc(json)}</textarea></div></div><div class="actions"><button class="btn primary" id="cp">Copia</button></div>`,()=>{
     document.getElementById("cp").onclick=async()=>{const t=document.getElementById("exT");try{await navigator.clipboard.writeText(t.value);toast("Copiato")}catch(e){t.select()}}});
 }
@@ -549,7 +684,7 @@ function openImport(){
    <div class="field"><label for="imT">Oppure incolla il testo esportato</label><textarea id="imT"></textarea><span class="hint">I dati attuali verranno sostituiti.</span></div></div>
    <div class="actions"><button class="btn primary" id="imOk">Importa e sostituisci</button></div><div id="imErr" class="err"></div>`,close=>{
    document.getElementById("imF").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>document.getElementById("imT").value=r.result;r.readAsText(f)};
-   document.getElementById("imOk").onclick=()=>{try{const d=JSON.parse(document.getElementById("imT").value);if(!Array.isArray(d.items)||!Array.isArray(d.salary))throw 0;state={...d,sample:false};close();commit("Dati importati")}catch(e){document.getElementById("imErr").textContent="Il testo non è un backup di Quote Fisse valido."}};});
+   document.getElementById("imOk").onclick=()=>{try{const d=JSON.parse(document.getElementById("imT").value);if(!Array.isArray(d.items)||!Array.isArray(d.salary))throw 0;state=norm({...d,sample:false});close();commit("Dati importati")}catch(e){document.getElementById("imErr").textContent="Il testo non è un backup valido di Il Mio Mese."}};});
 }
 
 /* ===== Avvio ===== */
@@ -559,8 +694,8 @@ document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{tab=b.dat
 let sx0=null,sy0=null;
 view.addEventListener("touchstart",e=>{if(e.target.closest(".cal")){sx0=null;return}sx0=e.touches[0].clientX;sy0=e.touches[0].clientY},{passive:true});
 view.addEventListener("touchend",e=>{if(sx0===null)return;const dx=e.changedTouches[0].clientX-sx0,dy=e.changedTouches[0].clientY-sy0;sx0=null;
-  if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.6&&(tab==="mese"||tab==="voci")){cur=mAdd(cur,dx<0?1:-1);render()}},{passive:true});
-state=lsGet()||esempio();
+  if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.6&&(tab==="mese"||tab==="voci"||tab==="spese")){cur=mAdd(cur,dx<0?1:-1);render()}},{passive:true});
+state=norm(lsGet()||esempio());
 render();
 try{navigator.storage?.persist?.()}catch(e){}
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}))}

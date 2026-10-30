@@ -1,7 +1,7 @@
 {
-  "name": "Quote Fisse",
-  "short_name": "Quote Fisse",
-  "description": "Spese fisse con cadenze diverse ripartite in quote mensili, più PAC e risparmi.",
+  "name": "Il Mio Mese",
+  "short_name": "Il Mio Mese",
+  "description": "Spese fisse, budget e spese di ogni giorno: quanto ti resta davvero a fine mese.",
   "lang": "it",
   "start_url": "./",
   "scope": "./",
