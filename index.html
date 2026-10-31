@@ -348,7 +348,7 @@ const mAdd=(m,n)=>mStr(mIdx(m)+n);
 const mNome=m=>`${MESI[mIdx(m)%12]} ${Math.floor(mIdx(m)/12)}`;
 const today=new Date();const OGGI=mStr(today.getFullYear()*12+today.getMonth());
 
-const VERSIONE="3.2.1 · 30 ottobre 2026";
+const VERSIONE="3.4 · 31 ottobre 2026";
 const CADENZE={1:"Mensile",2:"Bimestrale",3:"Trimestrale",6:"Semestrale",12:"Annuale",24:"Biennale"};
 const CATEGORIE=["Casa","Utenze","Assicurazioni","Trasporti","Abbonamenti","Salute","Tasse","Famiglia","Altro"];
 const eur=new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR"});
@@ -471,8 +471,20 @@ function monthCalc(m){
   const mv=movesOf(m),bIds=new Set(budgets.map(b=>b.it.id));
   const fuoriList=mv.filter(x=>!bIds.has(x.budgetId)),fuori=fuoriList.reduce((a,x)=>a+x.amount,0);
   const speso=mv.reduce((a,x)=>a+x.amount,0);
+  const ended=mIdx(m)<mIdx(curPeriod());
+  let saved=0,avanzo=0;
+  for(const b of budgets){b.ended=ended;b.saved=0;
+    if(!b.it.carry){const rest=Math.max(0,b.left);
+      if(ended){b.saved=rest;b.deduct=b.spent;saved+=rest}else avanzo+=rest}}
   const qB=budgets.reduce((a,b)=>a+b.deduct,0)+fuori;
-  return {m,stip,spese,ris,budgets,mv,fuori,speso,qS,qR,qB,realS,libero:stip-qS-qR-qB};
+  const carryKept=budgets.filter(b=>b.it.carry).reduce((a,b)=>a+Math.max(0,b.amt-b.spent),0);
+  return {m,stip,spese,ris,budgets,mv,fuori,speso,qS,qR,qB,realS,ended,saved,avanzo,carryKept,spesoReale:qS+speso,risp:stip-qS-qR-speso,libero:stip-qS-qR-qB};
+}
+/* Totale risparmiato: somma dei periodi conclusi da quando usi l'app */
+function totaliRisparmio(){
+  const all=state.items.flatMap(i=>i.versions.map(v=>mIdx(v.from))),fs=all.length?Math.min(...all):mIdx(OGGI),now=mIdx(curPeriod());let risp=0,inv=0,n=0;const per=[];
+  for(let i=fs;i<now;i++){const m=mStr(i),c=monthCalc(m);if(c.stip<=0)continue;risp+=c.risp;inv+=c.qR;n++;per.push({m,risp:c.risp,spesoReale:c.spesoReale})}
+  return{risp,inv,n,per};
 }
 
 /* ===== Persistenza: archivio privato del proprio account, con copia locale ===== */
@@ -526,9 +538,9 @@ function quickAdd(i){const q=lastQuick[i];if(!q)return;const bs=state.items.find
   if(state.sample)state.sample=false;state.moves.push(rec);state.lastBudget=rec.budgetId;cur=autoCur=periodOf(rec.date);persist();render();
   toast(`Aggiunto: ${q.note} ${EU(q.amount)}`,{label:"Annulla",fn:()=>{state.moves=state.moves.filter(m=>m!==rec);persist();render();toast("Spesa annullata")}})}
 function budgetItem(b){
-  const over=b.spent>b.avail+0.005,low=!over&&b.avail>0&&b.left/b.avail<0.25,cls=over?"bad":low?"warn":"ok";
+  const over=b.spent>b.avail+0.005,low=!over&&!b.ended&&b.avail>0&&b.left/b.avail<0.25,cls=over?"bad":low?"warn":"ok";
   const pct=b.avail>0?Math.min(100,b.spent/b.avail*100):(b.spent>0?100:0);
-  const txt=over?`Sforato di ${EU(b.spent-b.avail)}`:`Restano ${EU(b.left)}`;
+  const txt=over?`Sforato di ${EU(b.spent-b.avail)}`:b.ended&&!b.it.carry?(b.saved>0.005?`Risparmiati ${EU(b.saved)}`:"Usato tutto"):b.ended?`Messi da parte ${EU(b.left)}`:`Restano ${EU(b.left)}`;
   return `<li><button type="button" class="bitem" data-addto="${b.it.id}" aria-label="${esc(b.it.name)}: ${txt}, spesi ${EU(b.spent)} di ${EU(b.avail)}. Tocca per aggiungere una spesa">
     <span class="btop"><span class="bname">${esc(b.it.name)}${b.it.carry?`<span class="chip bud">salvadanaio</span>`:""}</span><span class="bstate ${cls}">${over||low?ico("alert"):""}${txt}</span></span>
     <span class="track"><i class="${cls==="ok"?"":cls}" style="width:${pct.toFixed(1)}%"></i></span>
@@ -543,19 +555,38 @@ function vMese(){
   const overs=c.budgets.filter(b=>b.spent>b.avail+0.005);
   let pill=null;
   if(c.libero<-0.005)pill=["bad","alert",`Sei sotto di ${EU(-c.libero)}`];
+  else if(past&&c.saved>0.005)pill=["ok","check",`Di cui ${EU(c.saved)} non spesi dei budget`];
   else if(overs.length)pill=["warn","alert",overs.length===1?`Hai sforato: ${overs[0].it.name}`:`Hai sforato ${overs.length} budget`];
   else if(isNow&&c.budgets.length){if(used>elP+10)pill=["warn","trend","Stai spendendo più in fretta del previsto"];else if(used<elP-5)pill=["ok","check","Stai spendendo meno del previsto"];else pill=["ok","check","Sei in linea con il previsto"]}
-  const head=isNow?"Puoi ancora spendere":past?"Ti è rimasto":"Resterà libero";
-  const sub=isNow?(c.libero>0.005?`circa <b>${EU(c.libero/left)} al giorno</b> per ${left===1?"l'ultimo giorno":`i prossimi ${left} giorni`}${state.periodOn?", fino allo stipendio":", fino a fine mese"}`:"Fino al prossimo stipendio conviene evitare altre spese."):past?`Periodo concluso: ${periodShort(cur)}`:`Periodo non ancora iniziato: ${periodShort(cur)}`;
+  const head=isNow?"Puoi ancora spendere":past?"Hai risparmiato":"Resterà libero";
+  const bigVal=past?c.risp:c.libero;
+  const hasCarry=c.budgets.some(b=>b.it.carry);
+  const tr=totaliRisparmio();
+  const saveCard=(isNow||past)?`<section class="card" aria-label="Spesa reale e risparmio del periodo">
+    <h2 class="h2" style="padding:0">${isNow?"Questo periodo finora":"Com'è andato il periodo"}</h2>
+    <div class="totrow"><span>Spese fisse (quota del mese)</span><b>${EU(c.qS)}</b></div>
+    <div class="totrow"><span>Spese registrate</span><b>${EU(c.speso)}</b></div>
+    <div class="totrow big"><span>Speso davvero</span><b>${EU(c.spesoReale)}</b></div>
+    ${c.qR>0.005?`<div class="totrow"><span>Investito (PAC, fondo pensione)</span><b>${EU(c.qR)}</b></div>`:""}
+    <div class="totrow big"><span>${isNow?"Se non spendi altro, risparmi":"Risparmiato"}</span><b style="color:var(${c.risp<-0.005?"--neg":"--accent"})">${EU(c.risp)}</b></div>
+    <p class="pmuted">${isNow?"Stipendio meno quello che hai speso davvero e investito. Ogni spesa che registri lo abbassa: i soldi dei budget che non usi restano qui, risparmiati.":"Stipendio meno quello che hai speso davvero e investito: i soldi dei budget che non hai usato sono finiti qui."}${c.carryKept>0.005?` Comprende ${EU(c.carryKept)} messi da parte nei salvadanai.`:""}</p>
+  </section>
+  <section class="card" aria-label="I tuoi risparmi">
+    <div class="bigrow"><span>Totale risparmiato</span><b style="color:var(--accent)">${EU(tr.risp)}</b></div>
+    <p class="pmuted">${tr.n?`${tr.n===1?"Nel periodo concluso":"Nei "+tr.n+" periodi conclusi"} da quando usi l'app${tr.inv>0.005?`, più ${EU(tr.inv)} investiti in PAC e fondo pensione`:""}.`:`Il primo totale arriva quando si chiude questo periodo${state.periodOn?`, con il prossimo stipendio`:", a fine mese"}.`}</p>
+    ${tr.per.length>1?`<ul class="mlist" style="padding:0">${tr.per.slice(-6).reverse().map(o=>`<li><div class="arr"><span class="mtxt"><b style="text-transform:capitalize">${mNome(o.m)}</b><span>Speso davvero ${EU(o.spesoReale)}</span></span><span class="mamt" style="color:var(${o.risp<-0.005?"--neg":"--accent"})">${EU(o.risp)}</span></div></li>`).join("")}</ul>`:""}
+  </section>`:"";
+  const sub=isNow?(c.libero>0.005?`circa <b>${EU(c.libero/left)} al giorno</b> per ${left===1?"l'ultimo giorno":`i prossimi ${left} giorni`}${state.periodOn?", fino allo stipendio":", fino a fine mese"}`:"Fino al prossimo stipendio conviene evitare altre spese."):past?`Periodo concluso (${periodShort(cur)}): hai speso davvero <b>${EU(c.spesoReale)}</b>${c.qR>0.005?` e investito ${EU(c.qR)}`:""}.`:`Periodo non ancora iniziato: ${periodShort(cur)}`;
   const reali=c.spese.filter(x=>x.real>0).sort((a,b)=>b.real-a.real);
   const last=[...c.mv].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4);
   return `
   <section class="oggi" aria-labelledby="hLib">
     <h1 id="hLib" class="oggi-h">${head}</h1>
-    <p class="bigmoney ${c.libero<-0.005?"neg":""}">${EU(c.libero)}</p>
+    <p class="bigmoney ${bigVal<-0.005?"neg":""}">${EU(bigVal)}</p>
     <p class="perday">${sub}</p>
     ${pill?`<span class="pill ${pill[0]}">${ico(pill[1])}${esc(pill[2])}</span>`:""}
   </section>
+  ${saveCard}
   ${isNow&&c.budgets.length?`<section class="card" aria-label="Andamento del periodo">
     <div class="meter"><div class="mrow"><span>Giorni trascorsi</span><b>${el} di ${tot}</b></div><span class="track" role="img" aria-label="Trascorso il ${elP} per cento del periodo"><i class="time" style="width:${elP}%"></i></span></div>
     <div class="meter"><div class="mrow"><span>Budget usati</span><b>${used}%</b></div><span class="track" role="img" aria-label="Usato il ${used} per cento dei budget"><i class="${used>100?"bad":used>elP+10?"warn":""}" style="width:${Math.min(100,used)}%"></i></span></div>
@@ -573,7 +604,7 @@ function vMese(){
       <div class="row click" id="editSal"><span class="t">${state.paid[cur]?`Stipendio arrivato il ${shortDay(state.paid[cur].date)}`:`Stipendio previsto<span class="chip est">da confermare</span>`}</span><span class="amt num">${EU(c.stip)}</span>${state.paid[cur]?"":`<span class="sub">Quando arriva, tocca qui e inserisci l'importo e il giorno esatti</span>`}</div>
       <div class="row"><span class="t">Quote spese fisse</span><span class="amt num minus">− ${EU(c.qS)}</span><span class="sub">${c.spese.length} voci, le non mensili divise sui mesi della loro cadenza${c.spese.some(x=>x.qEst)?`. Bollette stimate: ${c.spese.filter(x=>x.qEst).map(x=>esc(x.it.name)).join(", ")}`:""}</span></div>
       <div class="row"><span class="t">Risparmi e PAC</span><span class="amt num minus">− ${EU(c.qR)}</span><span class="sub">Escono dal conto ma restano tuoi</span></div>
-      <div class="row"><span class="t">Budget e spese variabili</span><span class="amt num minus">− ${EU(c.qB)}</span><span class="sub">${c.budgets.length?`Budget del periodo${overs.length?" più gli sforamenti":""}`:"Nessun budget impostato"}${c.fuori?` · ${EU(c.fuori)} fuori budget`:""}</span></div>
+      <div class="row"><span class="t">Budget e spese variabili</span><span class="amt num minus">− ${EU(c.qB)}</span><span class="sub">${c.budgets.length?(c.ended?`Speso davvero nei budget${c.saved>0.005?`: l'avanzo di ${EU(c.saved)} è tornato nel libero`:""}`:`Budget del periodo${overs.length?" più gli sforamenti":""}${c.avanzo>0.005?`. Se a fine periodo restano ${EU(c.avanzo)}, tornano nel libero`:""}`):"Nessun budget impostato"}${c.fuori?` · ${EU(c.fuori)} fuori budget`:""}</span></div>
       <div class="row total"><span class="t">Libero</span><span class="amt num ${c.libero<0?"neg":""}">${EU(c.libero)}</span></div>
     </div>
   </section>
@@ -624,6 +655,7 @@ function vSpese(){
   const fBtns=[["all","Tutte"],...c.budgets.map(b=>[b.it.id,b.it.name]),...(c.fuori?[["fuori","Fuori budget"]]:[])];
   return `<section class="card" aria-label="Totale del periodo">
     <div class="bigrow"><span>Speso finora</span><b>${EU(c.speso)}</b></div>
+    <div class="totrow"><span>Con le spese fisse (quota del mese)</span><b>${EU(c.spesoReale)}</b></div>
     <p class="pmuted">${state.periodOn?periodShort(cur):mNome(cur)} · ${c.mv.length} ${c.mv.length===1?"spesa":"spese"}</p>
     ${groups.length?`<div class="stack" role="img" aria-label="Suddivisione: ${groups.map(g=>`${esc(g.name)} ${EU(g.tot)}`).join(", ")}">${groups.map(g=>`<i style="flex:${g.tot.toFixed(2)};background:var(${palOf(g.id)[0]})"></i>`).join("")}</div>
     <ul class="leg">${groups.map(g=>`<li><i style="background:var(${palOf(g.id)[0]})"></i><span>${esc(g.name)} <b style="white-space:nowrap;font-weight:600">${EU(g.tot)}</b></span></li>`).join("")}</ul>`:""}
@@ -811,9 +843,10 @@ function openPicker(){
   const now=curPeriod(),fs=Math.min(firstStart(),...state.moves.map(x=>mIdx(periodOf(x.date))),...Object.keys(state.paid).map(mIdx),mIdx(now));
   const from=Math.max(fs,mIdx(now)-36),to=mIdx(now)+12,years={};
   for(let i=from;i<=to;i++){const m=mStr(i);(years[m.slice(0,4)]=years[m.slice(0,4)]||[]).push(m)}
-  const row=m=>{const c=monthCalc(m),over=c.budgets.some(b=>b.spent>b.avail+0.005),fut=mIdx(m)>mIdx(now);
-    const st=c.libero<-0.005?`<span class="bad">${ico("alert")}in negativo</span>`:over?`<span class="warn">${ico("alert")}budget sforato</span>`:`<span>${fut?"previsto":m===now?"finora":"libero"}</span>`;
-    return `<li><button type="button" class="pickbtn" data-pick="${m}" ${m===cur?'aria-current="true"':""} aria-label="${mNome(m)}${state.periodOn?", "+periodShort(m):""}: libero ${EU(c.libero)}${c.libero<-0.005?", in negativo":over?", budget sforato":""}${m===now?", periodo in corso":""}">
+  const row=m=>{const c0=monthCalc(m),over=c0.budgets.some(b=>b.spent>b.avail+0.005),fut=mIdx(m)>mIdx(now),pst=mIdx(m)<mIdx(now);
+    const c={...c0,libero:pst?c0.risp:c0.libero};
+    const st=c.libero<-0.005?`<span class="bad">${ico("alert")}in negativo</span>`:over&&!pst?`<span class="warn">${ico("alert")}budget sforato</span>`:`<span>${fut?"previsto":m===now?"puoi spendere":"risparmiato"}</span>`;
+    return `<li><button type="button" class="pickbtn" data-pick="${m}" ${m===cur?'aria-current="true"':""} aria-label="${mNome(m)}${state.periodOn?", "+periodShort(m):""}: ${pst?"risparmiato":"libero"} ${EU(c.libero)}${c.libero<-0.005?", in negativo":over?", budget sforato":""}${m===now?", periodo in corso":""}">
       <span class="pk-txt"><span class="pk-name">${MESI[mIdx(m)%12]}${m===now?" · in corso":""}</span>${state.periodOn?`<span class="pk-sub">${periodShort(m)}</span>`:""}</span>
       <span class="pk-amt"><b class="${c.libero<-0.005?"neg":""}">${EU(c.libero)}</b>${st}</span></button></li>`};
   sheet(state.periodOn?"Scegli il periodo":"Scegli il mese",`
@@ -978,9 +1011,9 @@ function csvVoci(){const m=curPeriod(),rows=[["Nome","Tipo","Categoria","Importo
   return toCsv(rows)}
 function csvRiepilogo(){const now=curPeriod();
   const fs=Math.min(firstStart(),...state.moves.map(x=>mIdx(periodOf(x.date))),...Object.keys(state.paid).map(mIdx),mIdx(now));
-  const rows=[["Periodo","Dal","Al","Stipendio (€)","Stipendio confermato","Quote spese fisse (€)","Addebiti fissi reali (€)","Risparmi e PAC (€)","Budget e spese variabili (€)","Spese registrate (€)","Libero (€)"]];
+  const rows=[["Periodo","Dal","Al","Stipendio (€)","Stipendio confermato","Quote spese fisse (€)","Addebiti fissi reali (€)","Risparmi e PAC (€)","Budget e spese variabili (€)","Spese registrate (€)","Speso davvero (€)","Risparmiato (€)","Non speso dei budget (€)","Libero (€)"]];
   for(let i=fs;i<=mIdx(now);i++){const m=mStr(i),c=monthCalc(m),r=periodRange(m);
-    rows.push([mNome(m),itDate(r.start),itDate(r.end),c.stip,state.paid[m]?"sì":"no",c.qS,c.realS,c.qR,c.qB,c.speso,c.libero])}
+    rows.push([mNome(m),itDate(r.start),itDate(r.end),c.stip,state.paid[m]?"sì":"no",c.qS,c.realS,c.qR,c.qB,c.speso,c.spesoReale,c.risp,c.saved,c.libero])}
   return toCsv(rows)}
 async function saveFiles(files){
   try{const dl=window.claude?.use?await claude.use("downloads"):null;
