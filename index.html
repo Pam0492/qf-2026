@@ -348,7 +348,7 @@ const mAdd=(m,n)=>mStr(mIdx(m)+n);
 const mNome=m=>`${MESI[mIdx(m)%12]} ${Math.floor(mIdx(m)/12)}`;
 const today=new Date();const OGGI=mStr(today.getFullYear()*12+today.getMonth());
 
-const VERSIONE="3.4 · 31 ottobre 2026";
+const VERSIONE="3.5 · 1 novembre 2026";
 const CADENZE={1:"Mensile",2:"Bimestrale",3:"Trimestrale",6:"Semestrale",12:"Annuale",24:"Biennale"};
 const CATEGORIE=["Casa","Utenze","Assicurazioni","Trasporti","Abbonamenti","Salute","Tasse","Famiglia","Altro"];
 const eur=new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR"});
@@ -524,6 +524,7 @@ function render(){
   const ab=document.getElementById("addB");if(ab)ab.onclick=()=>tab==="voci"?openItem(null):openMove(null);
   view.querySelectorAll("[data-move]").forEach(e=>e.onclick=()=>openMove(e.dataset.move));
   view.querySelectorAll("[data-addto]").forEach(e=>e.onclick=()=>openMove(null,e.dataset.addto));
+  view.querySelectorAll("[data-limits]").forEach(e=>e.onclick=()=>openLimits());
   view.querySelectorAll("[data-tabgo]").forEach(e=>e.onclick=()=>{tab=e.dataset.tabgo;render();window.scrollTo(0,0)});
   bindTab?.();
 }
@@ -592,7 +593,7 @@ function vMese(){
     <div class="meter"><div class="mrow"><span>Budget usati</span><b>${used}%</b></div><span class="track" role="img" aria-label="Usato il ${used} per cento dei budget"><i class="${used>100?"bad":used>elP+10?"warn":""}" style="width:${Math.min(100,used)}%"></i></span></div>
   </section>`:""}
   ${lastQuick.length?`<section><h2 class="h2">Aggiungi con un tocco</h2><div class="quick">${lastQuick.map((x,i)=>{const bn=budName(x.budgetId);return `<button type="button" data-quick="${i}" aria-label="Aggiungi subito ${esc(x.note)}, ${EU(x.amount)}${bn?`, in ${esc(bn)}`:""}"><span>${esc(x.note)}</span><b>${EU(x.amount)}</b></button>`}).join("")}</div></section>`:""}
-  <section><div class="h2row"><h2 class="h2">Budget</h2>${c.mv.length?`<button type="button" class="linkbtn" data-tabgo="spese">Vedi spese</button>`:""}</div>
+  <section><div class="h2row"><h2 class="h2">Budget</h2><button type="button" class="linkbtn" data-limits="1">${c.budgets.length?"Modifica limiti":"+ Crea un budget"}</button></div>
     ${c.budgets.length||c.fuori?`<ul class="blist">${c.budgets.map(budgetItem).join("")}${c.fuori?`<li><button type="button" class="bitem" data-tabgo="spese"><span class="btop"><span class="bname">Fuori budget</span><span class="bstate">${EU(c.fuori)}</span></span><span class="bsub">Spese registrate senza un budget</span></button></li>`:""}</ul>`
     :`<div class="ledger"><div class="empty">Crea un budget per extra, spesa e benzina: in Pianifica tocca + Voce e scegli Budget.</div></div>`}
   </section>
@@ -759,7 +760,7 @@ function vVoci(){
   const sp=act.filter(i=>i.kind==="spesa").sort((a,b)=>quota(b,versionAt(b,cur))-quota(a,versionAt(a,cur)));
   const ri=act.filter(i=>i.kind==="risparmio"),bu=act.filter(i=>i.kind==="budget");
   const blk=(t,l)=>`<section><h2 class="h2">${t}</h2><div class="ledger">${l.length?l.map(itemRow).join(""):`<div class="empty">Nessuna voce. Tocca + Voce per inserirne una.</div>`}</div></section>`;
-  return intro+blk(`Spese fisse attive a ${mNome(cur)}`,sp)+blk("Budget per spese variabili",bu)+blk("Risparmi e PAC",ri)+(off.length?blk("Sospese o non ancora attive",off):"");
+  return intro+blk(`Spese fisse attive a ${mNome(cur)}`,sp)+`<section><button type="button" class="btn" data-limits="1" style="width:100%">Modifica i limiti dei budget</button></section>`+blk("Budget per spese variabili",bu)+blk("Risparmi e PAC",ri)+(off.length?blk("Sospese o non ancora attive",off):"");
 }
 
 function vCal(){
@@ -858,6 +859,27 @@ function openPicker(){
     const el=document.querySelector(`[data-pick="${cur}"]`);if(el)el.scrollIntoView({block:"center"});
   });
 }
+function openLimits(){
+  const bs=state.items.filter(i=>i.kind==="budget"&&versionAt(i,cur));
+  sheet("Limiti dei budget",`
+   <p class="hint">Quanto vuoi poter spendere ogni ${state.periodOn?"periodo":"mese"} per ciascun budget. Il cambio vale da ${state.periodOn?"questo periodo":mNome(cur)} in poi: i periodi passati restano come erano.</p>
+   ${bs.length?`<div class="group">${bs.map(b=>{const v=versionAt(b,cur),sp=budgetMonth(b,cur).spent;return `<div class="field"><label for="lim-${b.id}">${esc(b.name)}${b.carry?" (salvadanaio)":""} · limite in €</label><input id="lim-${b.id}" data-lim="${b.id}" inputmode="decimal" enterkeyhint="done" autocomplete="off" value="${inNum(v.amount)}"><span class="hint">Spesi finora ${EU(sp)}</span></div>`}).join("")}</div>`
+     :`<div class="ledger"><div class="empty">Non hai ancora budget. Creane uno per extra, spesa o benzina.</div></div>`}
+   <div id="limErr" class="err"></div>
+   ${bs.length?`<button type="button" class="btn primary" id="limOk" style="width:100%">Salva i limiti</button>`:""}
+   <button type="button" class="btn" id="limNew" style="width:100%">+ Nuovo budget</button>`,close=>{
+    const $=i=>document.getElementById(i);
+    $("limNew").onclick=()=>{close();openItem(null,"budget")};
+    if(!bs.length)return;
+    $("limOk").onclick=()=>{const ch=[];
+      for(const b of bs){const a=parseNum($("lim-"+b.id).value);
+        if(!(a>=0)){$("limErr").textContent=`Il limite di ${b.name} non è un numero valido, ad esempio 150 o 150,50.`;$("lim-"+b.id).focus();return}
+        const v=versionAt(b,cur);if(Math.abs(a-v.amount)>0.004)ch.push([b,a])}
+      if(!ch.length){close();toast("Nessun limite cambiato");return}
+      for(const[b,a] of ch){b.versions=b.versions.filter(x=>x.from!==cur);b.versions.push({from:cur,amount:a,cadence:1,anchor:cur})}
+      close();commit(ch.length===1?`Limite di ${ch[0][0].name} aggiornato`:`${ch.length} limiti aggiornati`)};
+  },bs.length?"limOk":null);
+}
 function openPaid(m){
   const ex=state.paid[m],td=isoToday();
   const def=ex?ex.date:(td.slice(0,7)===m?td:arrival(m));
@@ -894,10 +916,10 @@ function openSalary(from){
   },"sOk");
 }
 
-function openItem(id){
+function openItem(id,k){
   const it=id?state.items.find(i=>i.id===id):null;
   const v=it?(versionAt(it,cur)||it.versions[it.versions.length-1]):{amount:"",cadence:1,anchor:cur};
-  let kind=it?it.kind:"spesa";
+  let kind=it?it.kind:(k||"spesa");
   const cats=[...CATEGORIE,"Investimenti"];
   sheet(it?"Modifica voce":"Nuova voce",`
    <div class="seg three" role="group" aria-label="Tipo"><button id="kS" type="button">Spesa fissa</button><button id="kB" type="button">Budget</button><button id="kR" type="button">Risparmio</button></div>
